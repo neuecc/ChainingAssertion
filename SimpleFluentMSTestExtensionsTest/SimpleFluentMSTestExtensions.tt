@@ -1,0 +1,93 @@
+﻿<#@ assembly Name="System.Core.dll" #>
+<#@ import namespace="System.Linq" #>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+ 
+namespace Microsoft.VisualStudio.TestTools.UnitTesting
+{
+    public static class Test
+    {
+        // extensions
+ 
+        /// <summary>IsNull</summary>
+        public static void Is<T>(this T value)
+        {
+            Assert.IsNull(value);
+        }
+ 
+        public static void Is<T>(this T actual, T expected, string message = "")
+        {
+            Assert.AreEqual(expected, actual, message);
+        }
+ 
+        public static void Is<T>(this T actual, Func<T, bool> expected, string message = "")
+        {
+            Assert.IsTrue(expected(actual), message);
+        }
+ 
+        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, string message = "")
+        {
+            CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray(), message);
+        }
+ 
+        public static void Is<T>(this IEnumerable<T> actual, params T[] expected)
+        {
+            Is(actual, expected.AsEnumerable());
+        }
+ 
+        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<Func<T, bool>> expected)
+        {
+            var count = 0;
+            foreach (var cond in actual.Zip(expected, (v, pred) => pred(v)))
+            {
+                Assert.IsTrue(cond, "Index = " + count++);
+            }
+        }
+ 
+        public static void Is<T>(this IEnumerable<T> actual, params Func<T, bool>[] expected)
+        {
+            Is(actual, expected.AsEnumerable());
+        }
+ 
+        // generator
+ 
+<#
+for(var i = 1; i < 8; i++)
+{
+#>
+ 
+        public class Case<#= MakeT(i) #> : IEnumerable<Tuple<#= MakeT(i) #>>
+        {
+            List<Tuple<#= MakeT(i) #>> tuples = new List<Tuple<#= MakeT(i) #>>();
+ 
+            public void Add(<#= MakeArgs(i) #>)
+            {
+                tuples.Add(Tuple.Create(<#= MakeParams(i) #>));
+            }
+ 
+            public IEnumerator<Tuple<#= MakeT(i) #>> GetEnumerator() { return tuples.GetEnumerator(); }
+            IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+        }
+<#
+}
+#>
+    }
+}
+<#+
+     string MakeT(int count)
+     {
+          return "<" + String.Join(", ", Enumerable.Range(1, count).Select(i => "T" + i)) + ">";
+     }
+ 
+     string MakeArgs(int count)
+     {
+          return String.Join(", ", Enumerable.Range(1, count).Select(i => "T" + i + " item" + i));
+     }
+ 
+     string MakeParams(int count)
+     {
+          return String.Join(", ", Enumerable.Range(1, count).Select(i => "item" + i));
+     }
+#>

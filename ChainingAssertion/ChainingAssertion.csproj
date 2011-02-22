@@ -58,7 +58,9 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ChainingAssertion.cs</LastGenOutput>
     </None>
-    <None Include="NuGet\chainingassertion.nuspec" />
+    <None Include="NuGet\chainingassertion.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="NuGet\package.bat" />
   </ItemGroup>
   <ItemGroup>
@@ -68,6 +70,7 @@
     <Content Include="NuGet\NuGet.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

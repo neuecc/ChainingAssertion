@@ -1,0 +1,1 @@
+nuget p chainingassertion.nuspec

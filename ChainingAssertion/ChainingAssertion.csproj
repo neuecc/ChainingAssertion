@@ -9,8 +9,8 @@
     <ProjectGuid>{1B7277C5-58BB-4E42-BB8D-72DD12DCD28E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimpleFluentMSTestExtensionsTest</RootNamespace>
-    <AssemblyName>SimpleFluentMSTestExtensionsTest</AssemblyName>
+    <RootNamespace>ChainingAssertion</RootNamespace>
+    <AssemblyName>ChainingAssertion</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -46,21 +46,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleFluentMSTestExtensions.cs">
+    <Compile Include="ChainingAssertion.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>SimpleFluentMSTestExtensions.tt</DependentUpon>
+      <DependentUpon>ChainingAssertion.tt</DependentUpon>
     </Compile>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="UnitTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="SimpleFluentMSTestExtensions.tt">
+    <None Include="ChainingAssertion.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SimpleFluentMSTestExtensions.cs</LastGenOutput>
+      <LastGenOutput>ChainingAssertion.cs</LastGenOutput>
     </None>
+    <None Include="NuGet\chainingassertion.nuspec" />
+    <None Include="NuGet\package.bat" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="NuGet\NuGet.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

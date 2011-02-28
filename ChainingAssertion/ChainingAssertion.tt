@@ -149,7 +149,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>CollectionAssert.AreNotEqual</summary>
         public static void IsNot<T>(this IEnumerable<T> actual, params T[] notExpected)
         {
-            Is(actual, notExpected.AsEnumerable());
+            IsNot(actual, notExpected.AsEnumerable());
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>

@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.0.0.0 (Feb. 22th, 2011)
+ * ver 1.1.0.0 (Feb. 28th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -21,11 +21,37 @@
  * // This same as CollectionAssert.AreEqual(Enumerable.Range(1,5), new[]{1, 2, 3, 4, 5})
  * Enumerable.Range(1, 5).Is(1, 2, 3, 4, 5);
  * 
- * | and two extension methods.
+ * | CollectionAssert
+ * | if you want to use CollectionAssert Methods then use Linq to Objects and Is
+ *
+ * new[] { 1, 3, 7, 8 }.Contains(8).Is(true);
+ * new[] { 1, 3, 7, 8 }.Count(i => i % 2 != 0).Is(3);
+ * new[] { 1, 3, 7, 8 }.Any().Is(true);
+ * new[] { 1, 3, 7, 8 }.All(i => i < 5).Is(false);
+ *
+ * // IsOrdered
+ * var array = new[] { 1, 5, 10, 100 };
+ * array.Is(array.OrderBy(x => x));
+ *
+ * | Other Assertions
  * 
+ * // Null Assertions
  * Object obj = null;
- * obj.IsNull();    // Assert.IsNull(obj)
- * obj.IsNotNull(); // Assert.IsNotNull(obj)
+ * obj.IsNull();             // Assert.IsNull(obj)
+ * new Object().IsNotNull(); // Assert.IsNotNull(obj)
+ *
+ * // Not Assertion
+ * "foobar".IsNot("fooooooo"); // Assert.AreNotEqual
+ * new[] { "a", "z", "x" }.IsNot("a", "x", "z"); /// CollectionAssert.AreNotEqual
+ *
+ * // ReferenceEqual Assertion
+ * var tuple = Tuple.Create("foo");
+ * tuple.IsSameReferenceAs(tuple); // Assert.AreSame
+ * tuple.IsNotSameReferenceAs(Tuple.Create("foo")); // Assert.AreNotSame
+ *
+ * // Type Assertion
+ * "foobar".IsInstanceOf<string>(); // Assert.IsInstanceOfType
+ * (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOfType
  * 
  * | Parameterized Test
  * | TestCase takes parameters and send to TestContext's Extension Method "Run".
@@ -83,33 +109,21 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 
     public static class ChainingAssertion
     {
-        /// <summary>Assert.IsNull</summary>
-        public static void IsNull<T>(this T value)
-        {
-            Assert.IsNull(value);
-        }
-
-        /// <summary>Assert.IsNotNull</summary>
-        public static void IsNotNull<T>(this T value)
-        {
-            Assert.IsNotNull(value);
-        }
-
         /// <summary>Assert.AreEqual</summary>
         public static void Is<T>(this T actual, T expected, string message = "")
         {
             Assert.AreEqual(expected, actual, message);
         }
 
-        /// <summary>Assert.IsTrue(predicate(obj))</summary>
-        public static void Is<T>(this T obj, Expression<Func<T, bool>> predicate, string message = "")
+        /// <summary>Assert.IsTrue(predicate(value))</summary>
+        public static void Is<T>(this T value, Expression<Func<T, bool>> predicate, string message = "")
         {
             var paramName = predicate.Parameters.First().Name;
             var msg = string.Format("{0} = {1}, {2}{3}",
-                paramName, obj, predicate,
+                paramName, value, predicate,
                 string.IsNullOrEmpty(message) ? "" : ", " + message);
 
-            Assert.IsTrue(predicate.Compile().Invoke(obj), msg);
+            Assert.IsTrue(predicate.Compile().Invoke(value), msg);
         }
 
         /// <summary>CollectionAssert.AreEqual</summary>
@@ -122,6 +136,60 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, string message = "")
         {
             CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray(), message);
+        }
+
+        /// <summary>Assert.AreNotEqual</summary>
+        public static void IsNot<T>(this T actual, T notExpected, string message = "")
+        {
+            Assert.AreNotEqual(notExpected, actual, message);
+        }
+
+        /// <summary>CollectionAssert.AreNotEqual</summary>
+        public static void IsNot<T>(this IEnumerable<T> actual, params T[] notExpected)
+        {
+            Is(actual, notExpected.AsEnumerable());
+        }
+
+        /// <summary>CollectionAssert.AreNotEqual</summary>
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, string message = "")
+        {
+            CollectionAssert.AreNotEqual(notExpected.ToArray(), actual.ToArray(), message);
+        }
+
+        /// <summary>Assert.IsNull</summary>
+        public static void IsNull<T>(this T value)
+        {
+            Assert.IsNull(value);
+        }
+
+        /// <summary>Assert.IsNotNull</summary>
+        public static void IsNotNull<T>(this T value)
+        {
+            Assert.IsNotNull(value);
+        }
+
+        /// <summary>Assert.AreSame</summary>
+        public static void IsSameReferenceAs<T>(this T actual, T expected, string message = "")
+        {
+            Assert.AreSame(expected, actual, message);
+        }
+
+        /// <summary>Assert.AreNotSame</summary>
+        public static void IsNotSameReferenceAs<T>(this T actual, T notExpected, string message = "")
+        {
+            Assert.AreNotSame(notExpected, actual, message);
+        }
+
+        /// <summary>Assert.IsInstanceOfType</summary>
+        public static void IsInstanceOf<TExpected>(this object value, string message = "")
+        {
+            Assert.IsInstanceOfType(value, typeof(TExpected), message);
+        }
+
+        /// <summary>Assert.IsNotInstanceOfType</summary>
+        public static void IsNotInstanceOf<TWrong>(this object value, string message = "")
+        {
+            Assert.IsNotInstanceOfType(value, typeof(TWrong), message);
         }
     }
 

@@ -2,16 +2,16 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ChainingAssertion</id>
-        <version>1.0.0.0</version>
+        <version>1.1.0.0</version>
         <title>Chaining Assertion</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Chaining Assertion for MSTest. Simpleness Assert Extension Method on Object. This provides only one .cs file.</description>
+        <description>Method Chaining base UnitTesting Extension Methods for MSTest. This provides only one .cs file.</description>
         <language>en-US</language>
         <licenseUrl>http://chainingassertion.codeplex.com/license</licenseUrl>
         <projectUrl>http://chainingassertion.codeplex.com/</projectUrl>
-        <tags>test</tags>
+        <tags>test unittest mstest</tags>
     </metadata>
     <files>
         <file src="../ChainingAssertion.cs" target="Content\" />

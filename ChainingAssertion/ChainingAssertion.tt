@@ -2,7 +2,7 @@
 <#@ import namespace="System.Linq" #>
 /*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.1.0.0 (Feb. 28th, 2011)
+ * ver 1.1.0.1 (Feb. 28th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)

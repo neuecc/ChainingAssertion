@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.1.0.0 (Feb. 28th, 2011)
+ * ver 1.1.0.1 (Feb. 28th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -95,6 +95,9 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+
+2011-02-28 ver 1.1.0.1
+    Fix Bugs - IsNot
 
 2011-02-28 ver 1.1.0.0
     Add Methods

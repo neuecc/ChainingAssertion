@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading;
-using System.Threading.Tasks;
+using Xunit;
+using Xunit.Extensions;
 
 namespace ChainingAssertion
 {
-    [TestClass]
     public class UnitTest
     {
-        public TestContext TestContext { get; set; }
-
-        [TestMethod]
+        [Fact]
         public void IsTest()
         {
             // "Is" extend on all object and has three overloads.
@@ -30,7 +24,7 @@ namespace ChainingAssertion
             Enumerable.Range(1, 5).Is(1, 2, 3, 4, 5);
         }
 
-        [TestMethod]
+        [Fact]
         public void CollectionTest()
         {
             // if you want to use CollectionAssert Methods then use Linq to Objects and Is
@@ -41,10 +35,10 @@ namespace ChainingAssertion
 
             // IsOrdered
             var array = new[] { 1, 5, 10, 100 };
-            array.Is(array.OrderBy(x => x));
+            array.Is(array.OrderBy(x => x).ToArray());
         }
 
-        [TestMethod]
+        [Fact]
         public void OthersTest()
         {
             // Null Assertions
@@ -66,34 +60,35 @@ namespace ChainingAssertion
             (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOfType
         }
 
-        [TestMethod]
-        [TestCase(1, 2, 3)]
-        [TestCase(10, 20, 30)]
-        [TestCase(100, 200, 300)]
-        public void TestCaseTest()
+        [Theory]
+        [InlineData(1, 2, 3)]
+        [InlineData(10, 20, 30)]
+        [InlineData(100, 200, 300)]
+        public void TestCaseTest(int x, int y, int z)
         {
-            TestContext.Run((int x, int y, int z) =>
-            {
-                (x + y).Is(z);
-                (x + y + z).Is(i => i < 1000);
-            });
+
+            (x + y).Is(z);
+            (x + y + z).Is(i => i < 1000);
         }
 
-        [TestMethod]
-        [TestCaseSource("toaruSource")]
-        public void TestTestCaseSource()
+        [Theory]
+        [PropertyData("toaruSource")]
+        public void TestTestCaseSource(int x, int y, string z)
         {
-            TestContext.Run((int x, int y, string z) =>
-            {
-                string.Concat(x, y).Is(z);
-            });
+            string.Concat(x, y).Is(z);
         }
 
-        public static object[] toaruSource = new[]
+        public static object[] toaruSource
         {
-            new object[] {1, 1, "11"},
-            new object[] {5, 3, "53"},
-            new object[] {9, 4, "94"}
-        };
+            get
+            {
+                return new[]
+                {
+                    new object[] {1, 1, "11"},
+                    new object[] {5, 3, "53"},
+                    new object[] {9, 4, "94"}
+                };
+            }
+        }
     }
 }

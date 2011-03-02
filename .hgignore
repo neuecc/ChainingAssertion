@@ -13,3 +13,5 @@ glob:*.vs10x
 glob:*.vsmdi
 glob:*.testsettings
 glob:TestResults
+syntax: glob
+*.nupkg

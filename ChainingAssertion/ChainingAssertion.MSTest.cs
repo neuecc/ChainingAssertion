@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.1.0.1 (Feb. 28th, 2011)
+ * ver 1.2.0.0 (Mar. 2nd, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -98,6 +98,7 @@
  * -- more details see project home --*/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -107,11 +108,17 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
     #region Extensions
 
-    public static class ChainingAssertion
+    public static partial class AssertEx
     {
-        /// <summary>Assert.AreEqual</summary>
+        /// <summary>Assert.AreEqual, if T is IEnumerable then CollectionAssert.AreEqual</summary>
         public static void Is<T>(this T actual, T expected, string message = "")
         {
+            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
+            {
+                ((IEnumerable)actual).Cast<object>().Is(((IEnumerable)expected).Cast<object>(), message);
+                return;
+            }
+
             Assert.AreEqual(expected, actual, message);
         }
 
@@ -138,9 +145,27 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray(), message);
         }
 
-        /// <summary>Assert.AreNotEqual</summary>
+        /// <summary>CollectionAssert.AreEqual</summary>
+        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IComparer<T> comparer, string message = "")
+        {
+            Is(expected, actual, comparer.Compare, message);
+        }
+
+        /// <summary>CollectionAssert.AreEqual</summary>
+        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Comparison<T> comparison, string message = "")
+        {
+            CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(comparison), message);
+        }
+
+        /// <summary>Assert.AreNotEqual, if T is IEnumerable then CollectionAssert.AreNotEqual</summary>
         public static void IsNot<T>(this T actual, T notExpected, string message = "")
         {
+            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
+            {
+                ((IEnumerable)actual).Cast<object>().IsNot(((IEnumerable)notExpected).Cast<object>(), message);
+                return;
+            }
+
             Assert.AreNotEqual(notExpected, actual, message);
         }
 
@@ -154,6 +179,18 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, string message = "")
         {
             CollectionAssert.AreNotEqual(notExpected.ToArray(), actual.ToArray(), message);
+        }
+
+        /// <summary>CollectionAssert.AreNotEqual</summary>
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IComparer<T> comparer, string message = "")
+        {
+            IsNot(expected, actual, comparer.Compare, message);
+        }
+
+        /// <summary>CollectionAssert.AreNotEqual</summary>
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Comparison<T> comparison, string message = "")
+        {
+            CollectionAssert.AreNotEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(comparison), message);
         }
 
         /// <summary>Assert.IsNull</summary>
@@ -190,6 +227,70 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         public static void IsNotInstanceOf<TWrong>(this object value, string message = "")
         {
             Assert.IsNotInstanceOfType(value, typeof(TWrong), message);
+        }
+
+        /// <summary>Alternative of ExpectedExceptionAttribute</summary>
+        public static T Throws<T>(Action testCode, string message = "") where T : Exception
+        {
+            var exception = ExecuteCode(testCode);
+            var headerMsg = "Failed Throws<" + typeof(T).Name + ">.";
+            var additionalMsg = string.IsNullOrEmpty(message) ? "" : ", " + message;
+
+            if (exception == null)
+            {
+                var formatted = headerMsg + " No exception was thrown" + additionalMsg;
+                throw new AssertFailedException(formatted);
+            }
+            else if (!typeof(T).Equals(exception.GetType()))
+            {
+                var formatted = string.Format("{0} Catched:{1}{2}", headerMsg, exception.GetType().Name, additionalMsg);
+                throw new AssertFailedException(formatted);
+            }
+
+            return (T)exception;
+        }
+
+        /// <summary>does not throw any exceptions</summary>
+        public static void DoesNotThrow(Action testCode, string message = "")
+        {
+            var exception = ExecuteCode(testCode);
+            if (exception != null)
+            {
+                var formatted = string.Format("Failed DoesNotThrow. Catched:{0}{1}", exception.GetType().Name, string.IsNullOrEmpty(message) ? "" : ", " + message);
+                throw new AssertFailedException(formatted);
+            }
+        }
+
+        /// <summary>execute action and return exception when catched otherwise return null</summary>
+        private static Exception ExecuteCode(Action testCode)
+        {
+            try
+            {
+                testCode();
+                return null;
+            }
+            catch (Exception e)
+            {
+                return e;
+            }
+        }
+
+        /// <summary>Comparison to IComparer Converter for CollectionAssert</summary>
+        private class ComparisonComparer<T> : IComparer
+        {
+            readonly Comparison<T> comparison;
+
+            public ComparisonComparer(Comparison<T> comparison)
+            {
+                this.comparison = comparison;
+            }
+
+            public int Compare(object x, object y)
+            {
+                return (comparison != null)
+                    ? comparison((T)x, (T)y)
+                    : object.Equals(x, y) ? 0 : -1;
+            }
         }
     }
 

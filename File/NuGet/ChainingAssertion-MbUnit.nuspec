@@ -3,7 +3,7 @@
     <metadata>
         <id>ChainingAssertion-MbUnit</id>
         <version>1.2.0.0</version>
-        <title>Chaining Assertion</title>
+        <title>Chaining Assertion for MbUnit</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>

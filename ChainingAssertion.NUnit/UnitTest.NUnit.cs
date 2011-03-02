@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections;
 
 namespace ChainingAssertion
 {
@@ -61,8 +56,33 @@ namespace ChainingAssertion
             tuple.IsNotSameReferenceAs(Tuple.Create("foo")); // Assert.AreNotSame
 
             // Type Assertion
-            "foobar".IsInstanceOf<string>(); // Assert.IsInstanceOfType
-            (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOfType
+            "foobar".IsInstanceOf<string>(); // Assert.IsInstanceOf
+            (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOf
+        }
+
+        [Test]
+        public void AdvancedCollectionTest()
+        {
+            var lower = new[] { "a", "b", "c" };
+            var upper = new[] { "A", "B", "C" };
+
+            // Comparer CollectionAssert, use IEqualityComparer<T> or Func<T,T,bool> delegate
+            lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
+            lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
+
+            // or you can use Linq to Objects - SequenceEqual
+            lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+        }
+
+        [Test]
+        public void ExceptionTest()
+        {
+            Assert.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+
+            Assert.DoesNotThrow(() =>
+            {
+                // code
+            });
         }
 
         [Test]
@@ -88,28 +108,5 @@ namespace ChainingAssertion
             new object[] {5, 3, "53"},
             new object[] {9, 4, "94"}
         };
-
-        [Test]
-        public void TestTestTest()
-        {
-            // TODO:
-
-            var lower = new[] { "a", "b", "c" };
-            var upper = new[] { "A", "B", "C" };
-
-            // Comparer CollectionAssert, use IComparer<T> or Comparison delegate
-            // value is equality then return 0 else other number
-            lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
-            lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper() ? 0 : -1);
-            lower.Is(upper, (x, y) => string.Compare(x, y, true));
-
-
-            // or you can use Linq to Objects - SequenceEqual
-            lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
-
-
-        }
-
-        // TODO:Write Throws Test
     }
 }

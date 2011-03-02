@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>ChainingAssertion</id>
+        <id>ChainingAssertion-NUnit</id>
         <version>1.2.0.0</version>
         <title>Chaining Assertion</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Method Chaining base UnitTesting Extension Methods for MSTest. This provides only one .cs file.</description>
+        <description>Method Chaining base UnitTesting Extension Methods for NUnit. This provides only one .cs file.</description>
         <language>en-US</language>
         <licenseUrl>http://chainingassertion.codeplex.com/license</licenseUrl>
         <projectUrl>http://chainingassertion.codeplex.com/</projectUrl>
-        <tags>test unittest mstest</tags>
+        <tags>test unittest NUnit</tags>
     </metadata>
     <files>
-        <file src="../../ChainingAssertion/ChainingAssertion.MSTest.cs" target="Content\" />
+        <file src="../../ChainingAssertion.NUnit/ChainingAssertion.NUnit.cs" target="Content\" />
     </files>
 </package>

@@ -9,6 +9,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.NUnit", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.MbUnit", "ChainingAssertion.MbUnit\ChainingAssertion.MbUnit.csproj", "{C63A6CEB-3673-4113-96BF-0DD22A6075BA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "File", "File", "{B75A0492-D825-4AC4-9710-C455AB2B0102}"
+	ProjectSection(SolutionItems) = preProject
+		File\ReadMe.txt = File\ReadMe.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{35C4E14F-653A-4626-84B6-0487F0E55230}"
+	ProjectSection(SolutionItems) = preProject
+		File\NuGet\ChainingAssertion-MbUnit.nuspec = File\NuGet\ChainingAssertion-MbUnit.nuspec
+		File\NuGet\ChainingAssertion-NUnit.nuspec = File\NuGet\ChainingAssertion-NUnit.nuspec
+		File\NuGet\ChainingAssertion-xUnit.nuspec = File\NuGet\ChainingAssertion-xUnit.nuspec
+		File\NuGet\ChainingAssertion.nuspec = File\NuGet\ChainingAssertion.nuspec
+		File\NuGet\NuGet.exe = File\NuGet\NuGet.exe
+		File\NuGet\package.bat = File\NuGet\package.bat
+		File\zippack.fsx = File\zippack.fsx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = SimpleFluentMSTestExtensions.vsmdi
@@ -37,5 +53,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{35C4E14F-653A-4626-84B6-0487F0E55230} = {B75A0492-D825-4AC4-9710-C455AB2B0102}
 	EndGlobalSection
 EndGlobal

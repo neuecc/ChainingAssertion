@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.2.0.0 (Mar. 2nd, 2011)
+ * ver 1.2.0.0 (Mar. 3rd, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -52,6 +52,36 @@
  * // Type Assertion
  * "foobar".IsInstanceOf<string>(); // Assert.IsInstanceOfType
  * (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOfType
+ * 
+ * | Advanced Collection Assertion
+ * 
+ * var lower = new[] { "a", "b", "c" };
+ * var upper = new[] { "A", "B", "C" };
+ *
+ * // Comparer CollectionAssert, use IEqualityComparer<T> or Func<T,T,bool> delegate
+ * lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
+ * lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
+ *
+ * // or you can use Linq to Objects - SequenceEqual
+ * lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+ * 
+ * | Exception Test
+ * 
+ * // Exception Test(alternative of ExpectedExceptionAttribute)
+ * AssertEx.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+ * 
+ * // return value is occured exception
+ * var ex = AssertEx.Throws<InvalidOperationException>(() =>
+ * {
+ *     throw new InvalidOperationException("foobar operation");
+ * });
+ * ex.Message.Is(s => s.Contains("foobar")); // additional exception assertion
+ * 
+ * // must not throw any exceptions
+ * AssertEx.DoesNotThrow(() =>
+ * {
+ *     // code
+ * });
  * 
  * | Parameterized Test
  * | TestCase takes parameters and send to TestContext's Extension Method "Run".
@@ -113,7 +143,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Assert.AreEqual, if T is IEnumerable then CollectionAssert.AreEqual</summary>
         public static void Is<T>(this T actual, T expected, string message = "")
         {
-            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
+            if (typeof(T) != typeof(String) && typeof(IEnumerable).IsAssignableFrom(typeof(T)))
             {
                 ((IEnumerable)actual).Cast<object>().Is(((IEnumerable)expected).Cast<object>(), message);
                 return;
@@ -146,21 +176,21 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         }
 
         /// <summary>CollectionAssert.AreEqual</summary>
-        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IComparer<T> comparer, string message = "")
+        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer, string message = "")
         {
-            Is(expected, actual, comparer.Compare, message);
+            Is(expected, actual, comparer.Equals, message);
         }
 
         /// <summary>CollectionAssert.AreEqual</summary>
-        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Comparison<T> comparison, string message = "")
+        public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Func<T, T, bool> equalityComparison, string message = "")
         {
-            CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(comparison), message);
+            CollectionAssert.AreEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(equalityComparison), message);
         }
 
         /// <summary>Assert.AreNotEqual, if T is IEnumerable then CollectionAssert.AreNotEqual</summary>
         public static void IsNot<T>(this T actual, T notExpected, string message = "")
         {
-            if (typeof(IEnumerable).IsAssignableFrom(typeof(T)))
+            if (typeof(T) != typeof(String) && typeof(IEnumerable).IsAssignableFrom(typeof(T)))
             {
                 ((IEnumerable)actual).Cast<object>().IsNot(((IEnumerable)notExpected).Cast<object>(), message);
                 return;
@@ -182,15 +212,15 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IComparer<T> comparer, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer, string message = "")
         {
-            IsNot(expected, actual, comparer.Compare, message);
+            IsNot(expected, actual, comparer.Equals, message);
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Comparison<T> comparison, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Func<T, T, bool> equalityComparison, string message = "")
         {
-            CollectionAssert.AreNotEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(comparison), message);
+            CollectionAssert.AreNotEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(equalityComparison), message);
         }
 
         /// <summary>Assert.IsNull</summary>
@@ -275,12 +305,12 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             }
         }
 
-        /// <summary>Comparison to IComparer Converter for CollectionAssert</summary>
+        /// <summary>EqualityComparison to IComparer Converter for CollectionAssert</summary>
         private class ComparisonComparer<T> : IComparer
         {
-            readonly Comparison<T> comparison;
+            readonly Func<T, T, bool> comparison;
 
-            public ComparisonComparer(Comparison<T> comparison)
+            public ComparisonComparer(Func<T, T, bool> comparison)
             {
                 this.comparison = comparison;
             }
@@ -288,7 +318,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             public int Compare(object x, object y)
             {
                 return (comparison != null)
-                    ? comparison((T)x, (T)y)
+                    ? comparison((T)x, (T)y) ? 0 : -1
                     : object.Equals(x, y) ? 0 : -1;
             }
         }

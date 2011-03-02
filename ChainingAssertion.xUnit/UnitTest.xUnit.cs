@@ -12,15 +12,16 @@ namespace ChainingAssertion
         {
             // "Is" extend on all object and has three overloads.
 
-            // This same as Assert.AreEqual(25, Math.Pow(5, 2))
+            // This same as Assert.Equal(25, Math.Pow(5, 2))
             Math.Pow(5, 2).Is(25);
 
             // lambda predicate assertion.
-            // This same as Assert.IsTrue("foobar".StartsWith("foo") && "foobar".EndWith("bar"))
+            // This same as Assert.True("foobar".StartsWith("foo") && "foobar".EndWith("bar"))
             "foobar".Is(s => s.StartsWith("foo") && s.EndsWith("bar"));
 
             // has collection assert
-            // This same as CollectionAssert.AreEqual(Enumerable.Range(1,5), new[]{1, 2, 3, 4, 5})
+            // This same as Assert.Equal(Enumerable.Range(1,5).ToArray(), new[]{1, 2, 3, 4, 5}.ToArray())
+            // it is sequence value compare
             Enumerable.Range(1, 5).Is(1, 2, 3, 4, 5);
         }
 
@@ -43,21 +44,46 @@ namespace ChainingAssertion
         {
             // Null Assertions
             Object obj = null;
-            obj.IsNull();             // Assert.IsNull(obj)
-            new Object().IsNotNull(); // Assert.IsNotNull(obj)
+            obj.IsNull();             // Assert.Null(obj)
+            new Object().IsNotNull(); // Assert.NotNull(obj)
 
             // Not Assertion
-            "foobar".IsNot("fooooooo"); // Assert.AreNotEqual
-            new[] { "a", "z", "x" }.IsNot("a", "x", "z"); /// CollectionAssert.AreNotEqual
+            "foobar".IsNot("fooooooo"); // Assert.NotEqual
+            new[] { "a", "z", "x" }.IsNot("a", "x", "z"); /// Assert.NotEqual
 
             // ReferenceEqual Assertion
             var tuple = Tuple.Create("foo");
-            tuple.IsSameReferenceAs(tuple); // Assert.AreSame
-            tuple.IsNotSameReferenceAs(Tuple.Create("foo")); // Assert.AreNotSame
+            tuple.IsSameReferenceAs(tuple); // Assert.Same
+            tuple.IsNotSameReferenceAs(Tuple.Create("foo")); // Assert.NotSame
 
             // Type Assertion
-            "foobar".IsInstanceOf<string>(); // Assert.IsInstanceOfType
-            (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOfType
+            "foobar".IsInstanceOf<string>(); // Assert.IsType
+            (999).IsNotInstanceOf<double>(); // Assert.IsNotType
+        }
+
+        [Fact]
+        public void AdvancedCollectionTest()
+        {
+            var lower = new[] { "a", "b", "c" };
+            var upper = new[] { "A", "B", "C" };
+
+            // Comparer CollectionAssert, use IEqualityComparer<T> or Func<T,T,bool> delegate
+            lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
+            lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
+
+            // or you can use Linq to Objects - SequenceEqual
+            lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+        }
+
+        [Fact]
+        public void ExceptionTest()
+        {
+            Assert.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+
+            Assert.DoesNotThrow(() =>
+            {
+                // code
+            });
         }
 
         [Theory]

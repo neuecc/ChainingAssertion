@@ -68,14 +68,32 @@ namespace ChainingAssertion
             var lower = new[] { "a", "b", "c" };
             var upper = new[] { "A", "B", "C" };
 
-            // Comparer CollectionAssert, use IComparer<T> or Comparison delegate
-            // value is equality then return 0 else other number
+            // Comparer CollectionAssert, use IEqualityComparer<T> or Func<T,T,bool> delegate
             lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
-            lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper() ? 0 : -1);
-            lower.Is(upper, (x, y) => string.Compare(x, y, true));
+            lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
 
             // or you can use Linq to Objects - SequenceEqual
             lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+        }
+
+        [TestMethod]
+        public void ExceptionTest()
+        {
+            // Exception Test(alternative of ExpectedExceptionAttribute)
+            AssertEx.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+
+            // return value is occured exception
+            var ex = AssertEx.Throws<InvalidOperationException>(() =>
+            {
+                throw new InvalidOperationException("foobar operation");
+            });
+            ex.Message.Is(s => s.Contains("foobar")); // additional exception assertion
+
+            // must not throw any exceptions
+            AssertEx.DoesNotThrow(() =>
+            {
+                // code
+            });
         }
 
         [TestMethod]

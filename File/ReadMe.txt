@@ -1,13 +1,21 @@
 ﻿/*--------------------------------------------------------------------------
- * Chaining Assertion for MSTest
- * ver 1.1.0.1 (Feb. 28th, 2011)
+ * Chaining Assertion
+ * ver 1.2.0.0 (Mar. 3rd, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
  * http://chainingassertion.codeplex.com/
  *--------------------------------------------------------------------------*/
 
-| at first, include ChainingAssertion.cs on MSTest Project.
+at first, include .cs file on your UnitTesting Project.
+
+ChainingAssertion.MSTest.cs - MSTest
+ChainingAssertion.NUnit.cs - NUnit
+ChainingAssertion.MbUnit.cs - MbUnit(Gallio)
+ChainingAssertion.xUnit.cs - xUnit.net
+
+following tutorial is for MSTest.
+other version, see .cs's header.
 
 | three example, "Is" overloads.
 
@@ -52,6 +60,36 @@ tuple.IsNotSameReferenceAs(Tuple.Create("foo")); // Assert.AreNotSame
 "foobar".IsInstanceOf<string>(); // Assert.IsInstanceOfType
 (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOfType
 
+| Advanced Collection Assertion
+
+var lower = new[] { "a", "b", "c" };
+var upper = new[] { "A", "B", "C" };
+
+// Comparer CollectionAssert, use IEqualityComparer<T> or Func<T,T,bool> delegate
+lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
+lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
+
+// or you can use Linq to Objects - SequenceEqual
+lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+
+| Exception Test
+
+// Exception Test(alternative of ExpectedExceptionAttribute)
+AssertEx.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+
+// return value is occured exception
+var ex = AssertEx.Throws<InvalidOperationException>(() =>
+{
+    throw new InvalidOperationException("foobar operation");
+});
+ex.Message.Is(s => s.Contains("foobar")); // additional exception assertion
+
+// must not throw any exceptions
+AssertEx.DoesNotThrow(() =>
+{
+    // code
+});
+
 | Parameterized Test
 | TestCase takes parameters and send to TestContext's Extension Method "Run".
 
@@ -95,13 +133,18 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2011-03-03 ver 1.2.0.0
+    Add Methods
+      AssertEx.Throws, AssertEx.DoesNotThrow, Is(EqualityComparer overload)
+    Add Files
+      NUnit, xUnit.NET, MbUnit version.
 
 2011-02-28 ver 1.1.0.1
     Fix Bugs - IsNot
 
 2011-02-28 ver 1.1.0.0
     Add Methods
-    * IsNot, IsInstanceOf, IsNotInstanceOf, IsSameReferenceAs, IsNotSameReferenceAs
+      IsNot, IsInstanceOf, IsNotInstanceOf, IsSameReferenceAs, IsNotSameReferenceAs
 
 2011-02-22 ver 1.0.0.0
     1st Release

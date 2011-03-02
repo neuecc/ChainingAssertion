@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
 using System.Linq;
 using MbUnit.Framework;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections;
 
 namespace ChainingAssertion
 {
@@ -25,14 +20,14 @@ namespace ChainingAssertion
             "foobar".Is(s => s.StartsWith("foo") && s.EndsWith("bar"));
 
             // has collection assert
-            // This same as CollectionAssert.AreEqual(Enumerable.Range(1,5), new[]{1, 2, 3, 4, 5})
+            // This same as Assert.AreElementsEqual(Enumerable.Range(1,5), new[]{1, 2, 3, 4, 5})
             Enumerable.Range(1, 5).Is(1, 2, 3, 4, 5);
         }
 
         [Test]
         public void CollectionTest()
         {
-            // if you want to use CollectionAssert Methods then use Linq to Objects and Is
+            // if you want to use AreElementsEqual Methods then use Linq to Objects and Is
             new[] { 1, 3, 7, 8 }.Contains(8).Is(true);
             new[] { 1, 3, 7, 8 }.Count(i => i % 2 != 0).Is(3);
             new[] { 1, 3, 7, 8 }.Any().Is(true);
@@ -53,7 +48,7 @@ namespace ChainingAssertion
 
             // Not Assertion
             "foobar".IsNot("fooooooo"); // Assert.AreNotEqual
-            new[] { "a", "z", "x" }.IsNot("a", "x", "z"); /// CollectionAssert.AreNotEqual
+            new[] { "a", "z", "x" }.IsNot("a", "x", "z"); // Assert.AreElementsNotEqual
 
             // ReferenceEqual Assertion
             var tuple = Tuple.Create("foo");
@@ -66,6 +61,31 @@ namespace ChainingAssertion
         }
 
         [Test]
+        public void AdvancedCollectionTest()
+        {
+            var lower = new[] { "a", "b", "c" };
+            var upper = new[] { "A", "B", "C" };
+
+            // Comparer CollectionAssert, use IEqualityComparer<T> or Func<T,T,bool> delegate
+            lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
+            lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
+
+            // or you can use Linq to Objects - SequenceEqual
+            lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+        }
+
+        [Test]
+        public void ExceptionTest()
+        {
+            Assert.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+
+            Assert.DoesNotThrow(() =>
+            {
+                // code
+            });
+        }
+
+        [Test]
         [Row(1, 2, 3)]
         [Row(10, 20, 30)]
         [Row(100, 200, 300)]
@@ -74,27 +94,5 @@ namespace ChainingAssertion
             (x + y).Is(z);
             (x + y + z).Is(i => i < 1000);
         }
-
-        [Test]
-        public void TestTestTest()
-        {
-            // TODO:
-
-            var lower = new[] { "a", "b", "c" };
-            var upper = new[] { "A", "B", "C" };
-
-            // Comparer CollectionAssert, use IComparer<T> or Comparison delegate
-            // value is equality then return 0 else other number
-            lower.Is(upper, StringComparer.InvariantCultureIgnoreCase);
-            lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
-            lower.Is(upper, (x, y) => string.Equals(x, y, StringComparison.InvariantCultureIgnoreCase));
-
-            // or you can use Linq to Objects - SequenceEqual
-            lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
-
-
-        }
-
-        // TODO:Write Throws Test
     }
 }

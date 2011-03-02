@@ -15,3 +15,4 @@ glob:*.testsettings
 glob:TestResults
 syntax: glob
 *.nupkg
+File/archive.zip

@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.2.0.0 (Mar. 3rd, 2011)
+ * ver 1.3.0.0 (Mar. 6th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -75,7 +75,10 @@ lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
 | Exception Test
 
 // Exception Test(alternative of ExpectedExceptionAttribute)
+// AssertEx.Throws does not allow derived type
+// AssertEx.Catch allows derived type
 AssertEx.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+AssertEx.Catch<Exception>(() => "foo".StartsWith(null));
 
 // return value is occured exception
 var ex = AssertEx.Throws<InvalidOperationException>(() =>
@@ -133,6 +136,12 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2011-03-06 ver 1.3.0.0
+    Add Methods
+        AssertEx.Catch
+    Fix Bugs
+        Is/IsNot(IEnumerable,IEnumerable,IEqualityComparer)'s Assertion actual and expected turned over
+
 2011-03-03 ver 1.2.0.0
     Add Methods
       AssertEx.Throws, AssertEx.DoesNotThrow, Is(EqualityComparer overload)

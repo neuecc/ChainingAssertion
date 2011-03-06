@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MbUnit
- * ver 1.2.0.0 (Mar. 3rd, 2011)
+ * ver 1.3.0.0 (Mar. 6th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -151,15 +151,15 @@ namespace MbUnit.Framework
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, IEqualityComparer<T> comparer, string message = "")
         {
-            Assert.AreElementsNotEqual(expected, actual, comparer, message);
+            Assert.AreElementsNotEqual(notExpected, actual, comparer, message);
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, EqualityComparison<T> comparison, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, EqualityComparison<T> comparison, string message = "")
         {
-            Assert.AreElementsNotEqual(expected, actual, comparison, message);
+            Assert.AreElementsNotEqual(notExpected, actual, comparison, message);
         }
 
         /// <summary>Assert.IsNull</summary>
@@ -197,7 +197,6 @@ namespace MbUnit.Framework
         /// <summary>Assert.IsNotInstanceOfType</summary>
         public static void IsNotInstanceOf<TWrong>(this object value, string message = "")
         {
-
             Assert.IsNotInstanceOfType<TWrong>(value, message);
         }
     }

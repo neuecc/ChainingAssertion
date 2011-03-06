@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for NUnit
- * ver 1.2.0.0 (Mar. 3rd, 2011)
+ * ver 1.3.0.0 (Mar. 6th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -117,7 +117,7 @@ namespace NUnit.Framework
         /// <summary>CollectionAssert.AreEqual</summary>
         public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer, string message = "")
         {
-            Is(expected, actual, comparer.Equals, message);
+            Is(actual, expected, comparer.Equals, message);
         }
 
         /// <summary>CollectionAssert.AreEqual</summary>
@@ -151,15 +151,15 @@ namespace NUnit.Framework
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, IEqualityComparer<T> comparer, string message = "")
         {
-            IsNot(expected, actual, comparer.Equals, message);
+            IsNot(actual, notExpected, comparer.Equals, message);
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Func<T, T, bool> equalityComparison, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, Func<T, T, bool> equalityComparison, string message = "")
         {
-            CollectionAssert.AreNotEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(equalityComparison), message);
+            CollectionAssert.AreNotEqual(notExpected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(equalityComparison), message);
         }
 
         /// <summary>Assert.IsNull</summary>

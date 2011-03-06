@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.2.0.0 (Mar. 3rd, 2011)
+ * ver 1.3.0.0 (Mar. 6th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -68,7 +68,10 @@
  * | Exception Test
  * 
  * // Exception Test(alternative of ExpectedExceptionAttribute)
+ * // AssertEx.Throws does not allow derived type
+ * // AssertEx.Catch allows derived type
  * AssertEx.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+ * AssertEx.Catch<Exception>(() => "foo".StartsWith(null));
  * 
  * // return value is occured exception
  * var ex = AssertEx.Throws<InvalidOperationException>(() =>
@@ -178,7 +181,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>CollectionAssert.AreEqual</summary>
         public static void Is<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer, string message = "")
         {
-            Is(expected, actual, comparer.Equals, message);
+            Is(actual, expected, comparer.Equals, message);
         }
 
         /// <summary>CollectionAssert.AreEqual</summary>
@@ -212,15 +215,15 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, IEqualityComparer<T> comparer, string message = "")
         {
-            IsNot(expected, actual, comparer.Equals, message);
+            IsNot(actual, notExpected, comparer.Equals, message);
         }
 
         /// <summary>CollectionAssert.AreNotEqual</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Func<T, T, bool> equalityComparison, string message = "")
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, Func<T, T, bool> equalityComparison, string message = "")
         {
-            CollectionAssert.AreNotEqual(expected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(equalityComparison), message);
+            CollectionAssert.AreNotEqual(notExpected.ToArray(), actual.ToArray(), new ComparisonComparer<T>(equalityComparison), message);
         }
 
         /// <summary>Assert.IsNull</summary>
@@ -259,8 +262,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             Assert.IsNotInstanceOfType(value, typeof(TWrong), message);
         }
 
-        /// <summary>Alternative of ExpectedExceptionAttribute</summary>
-        public static T Throws<T>(Action testCode, string message = "") where T : Exception
+        /// <summary>Alternative of ExpectedExceptionAttribute(allow derived type)</summary>
+        public static T Catch<T>(Action testCode, string message = "") where T : Exception
         {
             var exception = ExecuteCode(testCode);
             var headerMsg = "Failed Throws<" + typeof(T).Name + ">.";
@@ -271,8 +274,24 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                 var formatted = headerMsg + " No exception was thrown" + additionalMsg;
                 throw new AssertFailedException(formatted);
             }
-            else if (!typeof(T).Equals(exception.GetType()))
+            else if (!typeof(T).IsInstanceOfType(exception))
             {
+                var formatted = string.Format("{0} Catched:{1}{2}", headerMsg, exception.GetType().Name, additionalMsg);
+                throw new AssertFailedException(formatted);
+            }
+
+            return (T)exception;
+        }
+
+        /// <summary>Alternative of ExpectedExceptionAttribute(not allow derived type)</summary>
+        public static T Throws<T>(Action testCode, string message = "") where T : Exception
+        {
+            var exception = Catch<T>(testCode, message);
+
+            if (!typeof(T).Equals(exception.GetType()))
+            {
+                var headerMsg = "Failed Throws<" + typeof(T).Name + ">.";
+                var additionalMsg = string.IsNullOrEmpty(message) ? "" : ", " + message;
                 var formatted = string.Format("{0} Catched:{1}{2}", headerMsg, exception.GetType().Name, additionalMsg);
                 throw new AssertFailedException(formatted);
             }

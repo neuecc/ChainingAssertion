@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for xUnit
- * ver 1.2.0.0 (Mar. 3rd, 2011)
+ * ver 1.3.0.0 (Mar. 6th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -137,47 +137,47 @@ namespace Xunit
         }
 
         /// <summary>Assert.NotEqual, if T is IEnumerable then check value equality</summary>
-        public static void IsNot<T>(this T actual, T expected)
+        public static void IsNot<T>(this T actual, T notExpected)
         {
             if (typeof(T) != typeof(string) && typeof(IEnumerable).IsAssignableFrom(typeof(T)))
             {
                 Assert.NotEqual(
                     ((IEnumerable)actual).Cast<object>().ToArray(),
-                    ((IEnumerable)expected).Cast<object>().ToArray());
+                    ((IEnumerable)notExpected).Cast<object>().ToArray());
                 return;
             }
 
-            Assert.NotEqual(expected, actual);
+            Assert.NotEqual(notExpected, actual);
         }
 
         /// <summary>Assert.NotEqual</summary>
-        public static void IsNot<T>(this T actual, T expected, IEqualityComparer<T> comparer)
+        public static void IsNot<T>(this T actual, T notExpected, IEqualityComparer<T> comparer)
         {
-            Assert.NotEqual(expected, actual, comparer);
+            Assert.NotEqual(notExpected, actual, comparer);
         }
 
         /// <summary>Assert.NotEqual(sequence value compare)</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, params T[] expected)
+        public static void IsNot<T>(this IEnumerable<T> actual, params T[] notExpected)
         {
-            IsNot(actual, expected.AsEnumerable());
+            IsNot(actual, notExpected.AsEnumerable());
         }
 
         /// <summary>Assert.NotEqual(sequence value compare)</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected)
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected)
         {
-            Assert.NotEqual(expected.ToArray(), actual.ToArray());
+            Assert.NotEqual(notExpected.ToArray(), actual.ToArray());
         }
 
-        /// <summary>Assert.False(actual.SequenceEqual(expected, comparer))</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, IEqualityComparer<T> comparer)
+        /// <summary>Assert.False(actual.SequenceEqual(notExpected, comparer))</summary>
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, IEqualityComparer<T> comparer)
         {
-            Assert.False(actual.SequenceEqual(expected, comparer));
+            Assert.False(actual.SequenceEqual(notExpected, comparer));
         }
 
-        /// <summary>Assert.False(actual.SequenceEqual(expected, comparison))</summary>
-        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> expected, Func<T, T, bool> equalityComparison)
+        /// <summary>Assert.False(actual.SequenceEqual(notExpected, comparison))</summary>
+        public static void IsNot<T>(this IEnumerable<T> actual, IEnumerable<T> notExpected, Func<T, T, bool> equalityComparison)
         {
-            Assert.False(actual.SequenceEqual(expected, new EqualityComparer<T>(equalityComparison)));
+            Assert.False(actual.SequenceEqual(notExpected, new EqualityComparer<T>(equalityComparison)));
         }
 
         /// <summary>Assert.Null</summary>

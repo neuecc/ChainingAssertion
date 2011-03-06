@@ -78,6 +78,7 @@ namespace ChainingAssertion
         public void ExceptionTest()
         {
             Assert.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+            Assert.Catch<Exception>(() => "foo".StartsWith(null));
 
             Assert.DoesNotThrow(() =>
             {

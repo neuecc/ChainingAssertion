@@ -9,6 +9,8 @@ namespace ChainingAssertion
     {
         public TestContext TestContext { get; set; }
 
+        // samples
+
         [TestMethod]
         public void IsTest()
         {
@@ -80,7 +82,10 @@ namespace ChainingAssertion
         public void ExceptionTest()
         {
             // Exception Test(alternative of ExpectedExceptionAttribute)
+            // Throws does not allow derived type
+            // Catch allows derived type
             AssertEx.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
+            AssertEx.Catch<Exception>(() => "foo".StartsWith(null));
 
             // return value is occured exception
             var ex = AssertEx.Throws<InvalidOperationException>(() =>
@@ -93,6 +98,7 @@ namespace ChainingAssertion
             AssertEx.DoesNotThrow(() =>
             {
                 // code
+
             });
         }
 
@@ -125,5 +131,73 @@ namespace ChainingAssertion
             new object[] {5, 3, "53"},
             new object[] {9, 4, "94"}
         };
+
+        // exceptions
+
+        [TestMethod]
+        public void Throws()
+        {
+            try
+            {
+                AssertEx.Throws<Exception>(() => "foo".StartsWith(null));
+            }
+            catch (AssertFailedException)
+            {
+                return;
+            }
+            Assert.Fail();
+        }
+
+        [TestMethod]
+        public void Catch()
+        {
+            try
+            {
+                AssertEx.Catch<Exception>(() => "foo".StartsWith(null));
+            }
+            catch (AssertFailedException)
+            {
+                Assert.Fail();
+            }
+            return;
+        }
+
+        [TestMethod]
+        public void Throws2()
+        {
+            try
+            {
+                AssertEx.Throws<Exception>(() => { });
+            }
+            catch (AssertFailedException)
+            {
+                return;
+            }
+            Assert.Fail();
+        }
+
+        [TestMethod]
+        public void Catch2()
+        {
+            try
+            {
+                AssertEx.Catch<Exception>(() => { });
+            }
+            catch (AssertFailedException)
+            {
+                return;
+            }
+            Assert.Fail();
+        }
+
+        [TestMethod]
+        public void Exception()
+        {
+            var ex = AssertEx.Throws<ArgumentNullException>(() =>
+            {
+                throw new ArgumentNullException("nullnull");
+            });
+            ex.ParamName.Is("nullnull");
+        }
     }
 }

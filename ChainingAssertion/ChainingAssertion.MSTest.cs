@@ -353,7 +353,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         private class DynamicAccessor<T> : DynamicObject
         {
             private readonly T target;
-            private readonly BindingFlags flagsBase = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            private readonly BindingFlags callFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             public DynamicAccessor(T target)
             {
@@ -362,10 +362,94 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 
             public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
             {
-                var method = typeof(T).GetMethod(binder.Name, flagsBase);
+                var methods = typeof(T).GetMethods(callFlags).Where(mi => mi.Name == binder.Name).ToArray();
+                if (!methods.Any()) throw new ArgumentException(string.Format("\"{0}\" not found from <{1}>", binder.Name, typeof(T).Name));
 
-                result = method.Invoke(target, args);
+                var matchMethods = methods.Where(mi =>
+                {
+                    var dict = new Dictionary<Type, Type>(); // <GenericType, MatchType>
+                    return mi.GetParameters()
+                        .Select(pi => pi.ParameterType)
+                        .SequenceEqual(args.Select(o => o.GetType()),
+                            new EqualsComparer<Type>((x, y) =>
+                            {
+                                if (x.ContainsGenericParameters)
+                                {
+                                    if (dict.ContainsKey(x)) return dict[x].Equals(y);
+                                    else
+                                    {
+                                        dict.Add(x, y);
+                                        return true;
+                                    }
+                                }
+                                return x.Equals(y);
+                            }));
+                })
+                .ToArray();
+
+                if (!matchMethods.Any()) throw new ArgumentException(string.Format("\"{0}\" not match arguments from <{1}>", binder.Name, typeof(T).Name));
+
+                // TODO::::TODO::::TODO
+
+                var method = matchMethods.First(); // test
+                
+
+
+
+
+
+
+                // invalid method name
+
+
+                // Non Generic Method
+                if (!method.IsGenericMethod)
+                {
+                    result = method.Invoke(target, args);
+                    return true;
+                }
+
+                // Generic Method
+                var csharpBinder = binder.GetType().GetInterface("Microsoft.CSharp.RuntimeBinder.ICSharpInvokeOrInvokeMemberBinder");
+                if (csharpBinder == null) throw new ArgumentException("is not generic csharp code");
+
+                var types = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
+                if (types.Any()) // from TypeArguments    
+                {
+                    result = method.MakeGenericMethod(types).Invoke(target, args);
+                }
+                else // from parameter
+                {
+                    var generic = method.GetGenericArguments();
+                    var parameters = method.GetParameters();
+                    var hoge = generic.GroupJoin(parameters, t => t, pi => pi.ParameterType, (t, xs) => xs);
+
+
+                    result = null;
+                }
+
                 return true;
+            }
+
+
+            private class EqualsComparer<T> : IEqualityComparer<T>
+            {
+                private readonly Func<T, T, bool> equals;
+
+                public EqualsComparer(Func<T, T, bool> equals)
+                {
+                    this.equals = equals;
+                }
+
+                public bool Equals(T x, T y)
+                {
+                    return equals(x, y);
+                }
+
+                public int GetHashCode(T obj)
+                {
+                    return 0;
+                }
             }
         }
 

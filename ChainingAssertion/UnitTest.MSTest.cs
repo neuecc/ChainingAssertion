@@ -133,36 +133,62 @@ namespace ChainingAssertion
         };
 
 
-        public class TestPrivate
+        public class PrivateMock
         {
             private string privateString = "homu";
+
             private string PrivateProperty
             {
                 get { return privateString + privateString; }
                 set { privateString = value; }
             }
-            private string PrivateMethod()
+
+            private string PrivateMethod(int count)
             {
-                return privateString + privateString;
-            }
-            private int PrivateMethod2(int x)
-            {
-                return x * x;
+                return string.Join("", Enumerable.Repeat(privateString, count));
             }
         }
 
         [TestMethod]
         public void DynamicTest()
         {
-            var p = new TestPrivate();
+            var p = new PrivateMock();
+            (p.AsDynamic().PrivateMethod(3) as string).Is("homuhomuhomu");
 
-            // AsDynamicでdynamic化して、その後はprivateのメソッドもふつーに呼べる
-            (p.AsDynamic().PrivateMethod() as string).Is("homuhomu");
-            var actual = p.AsDynamic().PrivateMethod2(100);
+            // TODO:property,field test
+        }
 
-            // 拡張メソッドは型確定させないと使えないからねえ
-            ((int)actual).Is(10000);
-            Assert.AreEqual(10000, actual); // こっちなら型変換しなくても大丈夫ではあるんですが
+        public class GenericPrivateMock
+        {
+            private string PrivateGeneric<T1, T2>(T1 t1a, T2 t2a, T1 t1b)
+            {
+                return "a";
+            }
+
+            private string PrivateGeneric<T1, T2, T3>(T1 t1a, T2 t2a, T1 t1b)
+            {
+                return "b";
+            }
+
+            private string PrivateGeneric<T1, T2>(T1 t1a, T2 t2a, int i)
+            {
+                return "c";
+            }
+
+            private string PrivateGeneric<T1, T2>(T1 t1a, T2 t2a, int i, T2 t2b)
+            {
+                return "d";
+            }
+        }
+
+        [TestMethod]
+        public void GenericPrivateTest()
+        {
+            // TODO:4pattern of generic private methods
+
+            var p = new GenericPrivateMock();
+
+            var r = p.AsDynamic().PrivateGeneric("a", 100, "c");
         }
 
 

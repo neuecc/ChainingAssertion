@@ -136,6 +136,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Dynamic;
 
 namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
@@ -341,6 +342,34 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     : object.Equals(x, y) ? 0 : -1;
             }
         }
+
+        #region DynamicObject
+
+        public static dynamic AsDynamic<T>(this T target)
+        {
+            return new DynamicAccessor<T>(target);
+        }
+
+        private class DynamicAccessor<T> : DynamicObject
+        {
+            private readonly T target;
+            private readonly BindingFlags flagsBase = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            public DynamicAccessor(T target)
+            {
+                this.target = target;
+            }
+
+            public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+            {
+                var method = typeof(T).GetMethod(binder.Name, flagsBase);
+
+                result = method.Invoke(target, args);
+                return true;
+            }
+        }
+
+        #endregion
     }
 
     #endregion
@@ -398,7 +427,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 
             return testCase.Concat(testCaseSource);
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1>(this TestContext context, Action<T1> assertion)
         {
@@ -409,7 +438,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2>(this TestContext context, Action<T1, T2> assertion)
         {
@@ -421,7 +450,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3>(this TestContext context, Action<T1, T2, T3> assertion)
         {
@@ -434,7 +463,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4>(this TestContext context, Action<T1, T2, T3, T4> assertion)
         {
@@ -448,7 +477,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5>(this TestContext context, Action<T1, T2, T3, T4, T5> assertion)
         {
@@ -463,7 +492,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6>(this TestContext context, Action<T1, T2, T3, T4, T5, T6> assertion)
         {
@@ -479,7 +508,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7> assertion)
         {
@@ -496,7 +525,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8> assertion)
         {
@@ -514,7 +543,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> assertion)
         {
@@ -533,7 +562,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> assertion)
         {
@@ -553,7 +582,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> assertion)
         {
@@ -574,7 +603,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> assertion)
         {
@@ -596,7 +625,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> assertion)
         {
@@ -619,7 +648,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> assertion)
         {
@@ -643,7 +672,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> assertion)
         {
@@ -668,7 +697,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     );
             }
         }
-        
+
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> assertion)
         {

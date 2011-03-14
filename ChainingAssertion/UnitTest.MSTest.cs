@@ -132,6 +132,41 @@ namespace ChainingAssertion
             new object[] {9, 4, "94"}
         };
 
+
+        public class TestPrivate
+        {
+            private string privateString = "homu";
+            private string PrivateProperty
+            {
+                get { return privateString + privateString; }
+                set { privateString = value; }
+            }
+            private string PrivateMethod()
+            {
+                return privateString + privateString;
+            }
+            private int PrivateMethod2(int x)
+            {
+                return x * x;
+            }
+        }
+
+        [TestMethod]
+        public void DynamicTest()
+        {
+            var p = new TestPrivate();
+
+            // AsDynamicでdynamic化して、その後はprivateのメソッドもふつーに呼べる
+            (p.AsDynamic().PrivateMethod() as string).Is("homuhomu");
+            var actual = p.AsDynamic().PrivateMethod2(100);
+
+            // 拡張メソッドは型確定させないと使えないからねえ
+            ((int)actual).Is(10000);
+            Assert.AreEqual(10000, actual); // こっちなら型変換しなくても大丈夫ではあるんですが
+        }
+
+
+
         // exceptions
 
         [TestMethod]

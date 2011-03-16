@@ -65,7 +65,6 @@
     <Compile Include="ChainingAssertion.MSTest.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>ChainingAssertion.MSTest.tt</DependentUpon>
     </Compile>
     <Compile Include="UnitTest.MSTest.cs" />
   </ItemGroup>

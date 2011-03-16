@@ -57,6 +57,9 @@
     <Reference Include="xunit.extensions, Version=1.6.1.1521, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\File\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ChainingAssertion.xUnit.cs" />
     <Compile Include="UnitTest.xUnit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

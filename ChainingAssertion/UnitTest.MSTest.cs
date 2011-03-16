@@ -33,14 +33,14 @@ namespace ChainingAssertion
         public void CollectionTest()
         {
             // if you want to use CollectionAssert Methods then use Linq to Objects and Is
-            new[] { 1, 3, 7, 8 }.Contains(8).Is(true);
-            new[] { 1, 3, 7, 8 }.Count(i => i % 2 != 0).Is(3);
-            new[] { 1, 3, 7, 8 }.Any().Is(true);
-            new[] { 1, 3, 7, 8 }.All(i => i < 5).Is(false);
+            var array = new[] { 1, 3, 7, 8 };
 
-            // IsOrdered
-            var array = new[] { 1, 5, 10, 100 };
-            array.Is(array.OrderBy(x => x));
+            array.Count().Is(4);
+            array.Contains(8).Is(true);
+            array.All(i => i < 5).Is(false);
+            array.Any().Is(true);
+            new int[] { }.Any().Is(false); // IsEmpty
+            array.OrderBy(x => x).Is(array); // IsOrdered
         }
 
         [TestMethod]

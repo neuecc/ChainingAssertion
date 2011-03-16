@@ -31,7 +31,7 @@
  *
  * // IsOrdered
  * var array = new[] { 1, 5, 10, 100 };
- * array.Is(array.OrderBy(x => x));
+ * array.OrderBy(x => x).Is(array);
  *
  * | Other Assertions
  * 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace ChainingAssertion
 {
@@ -179,19 +180,78 @@ namespace ChainingAssertion
             {
                 return "d";
             }
+
+            private string PrivateGeneric(string t1a, string t2a, string t1b)
+            {
+                return "e";
+            }
+
+            private string PrivateGeneric<T1, T2, T3>(T3 t3a, T2 t2, T1 t1, T3 t3b)
+            {
+                return "f";
+            }
+
+            private string PrivateGeneric<T>()
+            {
+                return "g";
+            }
+
+            private Type ReturnType<T>(T t1, T t2)
+            {
+                return typeof(T);
+            }
+
+            public Type ReturnType<T>(IEnumerable<T> t1, T t2)
+            {
+                return typeof(T);
+            }
         }
 
         [TestMethod]
         public void GenericPrivateTest()
         {
-            // TODO:4pattern of generic private methods
+            var d = new GenericPrivateMock().AsDynamic();
 
-            var p = new GenericPrivateMock();
+            // (d.PrivateGeneric(0, "", 0) as string).Is("a");
+            // (d.PrivateGeneric<int,string>(0, "", 0) as string).Is("a");
 
-            var r = p.AsDynamic().PrivateGeneric("a", 100, "c");
+            (d.PrivateGeneric("", 0, "") as string).Is("a");
+            (d.PrivateGeneric<string, int>("", 0, "") as string).Is("a");
+            (d.PrivateGeneric<int, string, long>(0, "", 0) as string).Is("b");
+            (d.PrivateGeneric(0.0, "", 0) as string).Is("c");
+            (d.PrivateGeneric<double, string>(0.0, "", 0) as string).Is("c");
+            (d.PrivateGeneric(0.0, "", 0, "") as string).Is("d");
+            (d.PrivateGeneric<double, string>(0.0, "", 0, "") as string).Is("d");
+            (d.PrivateGeneric("", "", "") as string).Is("e");
+            (d.PrivateGeneric(0.0, "", 0, 0.0) as string).Is("f");
+            (d.PrivateGeneric<int, string, double>(0.0, "", 0, 0.0) as string).Is("f");
+            (d.PrivateGeneric<int>() as string).Is("g");
+
+            (d.ReturnType(0, 0) as Type).Is(typeof(int));
+
+            // (d.ReturnType(Enumerable.Range(1, 10), 0) as Type).Is(typeof(int));
         }
 
+        [TestMethod]
+        public void GenericPrivateExceptionTest()
+        {
+            var d = new GenericPrivateMock().AsDynamic();
 
+            var e1 = AssertEx.Throws<ArgumentException>(() => d.HogeHoge());
+            e1.Message.Is(s => s.Contains("not found") && s.Contains("HogeHoge"));
+
+            var e2 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric(1));
+            e2.Message.Is(s => s.Contains("not match arguments") && s.Contains("PrivateGeneric"));
+
+            var e3 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric());
+            e3.Message.Is(s => s.Contains("not found type parameter") && s.Contains("PrivateGeneric"));
+
+            var e4 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric<int, int, int, int>(0, 0, 0));
+            e4.Message.Is(s => s.Contains("invalid type parameter") && s.Contains("PrivateGeneric"));
+
+            var e5 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric(0, 0, 0));
+            e5.Message.Is(s => s.Contains("ambiguous") && s.Contains("PrivateGeneric"));
+        }
 
         // exceptions
 

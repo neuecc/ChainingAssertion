@@ -360,93 +360,143 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                 this.target = target;
             }
 
-            public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+            private Type AssignableBoundType(Type left, Type right)
             {
-                var methods = typeof(T).GetMethods(callFlags).Where(mi => mi.Name == binder.Name).ToArray();
-                if (!methods.Any()) throw new ArgumentException(string.Format("\"{0}\" not found from <{1}>", binder.Name, typeof(T).Name));
+                return (left == null || right == null) ? null
+                    : left.IsAssignableFrom(right) ? left
+                    : right.IsAssignableFrom(left) ? right
+                    : null;
+            }
 
-                var matchMethods = methods.Where(mi =>
-                {
-                    var dict = new Dictionary<Type, Type>(); // <GenericType, MatchType>
-                    return mi.GetParameters()
-                        .Select(pi => pi.ParameterType)
-                        .SequenceEqual(args.Select(o => o.GetType()),
-                            new EqualsComparer<Type>((x, y) =>
-                            {
-                                if (x.ContainsGenericParameters)
+            private MethodInfo MatchMethod(string methodName, object[] args, Type[] typeArgs)
+            {
+                // name match
+                var nameMatched = typeof(T).GetMethods(callFlags)
+                    .Where(mi => mi.Name == methodName)
+                    .ToArray();
+                if (!nameMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not found from <{1}>", methodName, typeof(T).Name));
+
+                // parameter match
+                var parameterMatched = nameMatched
+                    .Where(mi =>
+                    {
+                        var dict = new Dictionary<Type, Type>(); // <GenericType, MatchType>
+                        return mi.GetParameters()
+                            .Select(pi => pi.ParameterType)
+                            .SequenceEqual(args.Select(o => o.GetType()),
+                                new EqualsComparer<Type>((x, y) =>
                                 {
-                                    if (dict.ContainsKey(x)) return dict[x].Equals(y);
-                                    else
+                                    if (x.IsGenericParameter)
                                     {
-                                        dict.Add(x, y);
-                                        return true;
+                                        if (dict.ContainsKey(x))
+                                        {
+                                            var t = AssignableBoundType(dict[x], y);
+                                            if (t == null) return false;
+                                            else
+                                            {
+                                                dict[x] = t;
+                                                return true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            dict.Add(x, y);
+                                            return true;
+                                        }
                                     }
-                                }
-                                return x.Equals(y);
-                            }));
-                })
-                .ToArray();
+                                    return x.Equals(y);
+                                }));
+                    })
+                    .ToArray();
+                if (!parameterMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not match arguments from <{1}>", methodName, typeof(T).Name));
 
-                if (!matchMethods.Any()) throw new ArgumentException(string.Format("\"{0}\" not match arguments from <{1}>", binder.Name, typeof(T).Name));
-
-                // TODO::::TODO::::TODO
-
-                var method = matchMethods.First(); // test
-                
-
-
-
-
-
-
-                // invalid method name
-
-
-                // Non Generic Method
-                if (!method.IsGenericMethod)
+                if (typeArgs.Any())
                 {
-                    result = method.Invoke(target, args);
-                    return true;
+                    // with typeArgs
+
+                    var typeMatched = parameterMatched
+                        .Where(mi => mi.GetGenericArguments().Length == typeArgs.Length)
+                        .ToArray();
+                    if (typeMatched.Length == 0) throw new ArgumentException(string.Format("\"{0}\" invalid type parameter from <{1}>", methodName, typeof(T).Name));
+                    if (typeMatched.Length == 1) return typeMatched[0].MakeGenericMethod(typeArgs);
+                }
+                else
+                {
+                    // from parameter only
+
+                    var nongeneric = parameterMatched.SingleOrDefault(mi =>
+                        mi.GetParameters()
+                          .Select(pi => pi.ParameterType)
+                          .All(t => !t.IsGenericParameter));
+                    if (nongeneric != null && !nongeneric.IsGenericMethodDefinition) return nongeneric;
+                    if (nongeneric != null && nongeneric.IsGenericMethodDefinition)
+                    {
+                        throw new ArgumentException(string.Format("\"{0}\" not found type parameter from <{1}>", methodName, typeof(T).Name));
+                    }
+
+                    var methods = parameterMatched
+                        .Select(method =>
+                        {
+                            var parameterGenericTypes = method.GetParameters()
+                                .Select(pi => pi.ParameterType)
+                                .Zip(args.Select(o => o.GetType()), (Parameter, Argument) => new { Parameter, Argument })
+                                .GroupBy(a => a.Parameter, a => a.Argument)
+                                .Where(g => g.Key.IsGenericParameter)
+                                .Select(g => new { g.Key, Type = g.Aggregate(AssignableBoundType) });
+
+                            var genArgs = method.GetGenericArguments()
+                                    .GroupJoin(parameterGenericTypes, x => x, y => y.Key, (Key, Args) => new { Key, Args })
+                                    .ToArray();
+
+                            if (!genArgs.All(a => a.Args.Any())) return null;
+
+                            return new
+                            {
+                                MethodInfo = method,
+                                Args = genArgs.Select(a => a.Args.First().Type).ToArray()
+                            };
+                        })
+                        .Where(xs => xs != null)
+                        .ToArray();
+
+                    if (methods.Length == 1)
+                    {
+                        var method = methods[0];
+                        return method.MethodInfo.MakeGenericMethod(method.Args);
+                    }
                 }
 
-                // Generic Method
+                // ambiguous
+                throw new ArgumentException(string.Format("\"{0}\" ambiguous arguments from <{1}>", methodName, typeof(T).Name));
+            }
+
+            public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+            {
                 var csharpBinder = binder.GetType().GetInterface("Microsoft.CSharp.RuntimeBinder.ICSharpInvokeOrInvokeMemberBinder");
                 if (csharpBinder == null) throw new ArgumentException("is not generic csharp code");
 
-                var types = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
-                if (types.Any()) // from TypeArguments    
-                {
-                    result = method.MakeGenericMethod(types).Invoke(target, args);
-                }
-                else // from parameter
-                {
-                    var generic = method.GetGenericArguments();
-                    var parameters = method.GetParameters();
-                    var hoge = generic.GroupJoin(parameters, t => t, pi => pi.ParameterType, (t, xs) => xs);
-
-
-                    result = null;
-                }
+                var typeArgs = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
+                var method = MatchMethod(binder.Name, args, typeArgs);
+                result = method.Invoke(target, args);
 
                 return true;
             }
 
-
-            private class EqualsComparer<T> : IEqualityComparer<T>
+            private class EqualsComparer<TE> : IEqualityComparer<TE>
             {
-                private readonly Func<T, T, bool> equals;
+                private readonly Func<TE, TE, bool> equals;
 
-                public EqualsComparer(Func<T, T, bool> equals)
+                public EqualsComparer(Func<TE, TE, bool> equals)
                 {
                     this.equals = equals;
                 }
 
-                public bool Equals(T x, T y)
+                public bool Equals(TE x, TE y)
                 {
                     return equals(x, y);
                 }
 
-                public int GetHashCode(T obj)
+                public int GetHashCode(TE obj)
                 {
                     return 0;
                 }

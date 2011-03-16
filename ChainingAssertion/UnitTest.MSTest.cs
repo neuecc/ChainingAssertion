@@ -136,27 +136,60 @@ namespace ChainingAssertion
 
         public class PrivateMock
         {
-            private string privateString = "homu";
+            private string privateField = "homu";
 
             private string PrivateProperty
             {
-                get { return privateString + privateString; }
-                set { privateString = value; }
+                get { return privateField + privateField; }
+                set { privateField = value; }
             }
 
             private string PrivateMethod(int count)
             {
-                return string.Join("", Enumerable.Repeat(privateString, count));
+                return string.Join("", Enumerable.Repeat(privateField, count));
+            }
+
+            private char this[int index]
+            {
+                get { return privateField[index]; }
+                set { privateField = new string(value, index); }
+            }
+
+            private string this[double index]
+            {
+                get { return index.ToString(); }
+                set { privateField = value + index.ToString(); }
             }
         }
 
         [TestMethod]
         public void DynamicTest()
         {
-            var p = new PrivateMock();
-            (p.AsDynamic().PrivateMethod(3) as string).Is("homuhomuhomu");
+            var d = new PrivateMock().AsDynamic();
 
-            // TODO:property,field test
+            (d.privateField as string).Is("homu");
+            (d.PrivateProperty as string).Is("homuhomu");
+            (d.PrivateMethod(3) as string).Is("homuhomuhomu");
+
+            d.privateField = "mogu";
+            (d.privateField as string).Is("mogu");
+
+            d.PrivateProperty = "mami";
+            (d.privateField as string).Is("mami");
+
+            ((char)d[2]).Is('m');
+            d[3] = 'A';
+            (d.privateField as string).Is("AAA");
+
+            ((string)d[100.101]).Is("100.101");
+            d[72] = "Chihaya";
+            (d.privateField as string).Is("Chihaya72");
+
+            var e1 = AssertEx.Throws<ArgumentException>(() => { var x = d["hoge"]; });
+            e1.Message.Is(s => s.Contains("indexer not found"));
+
+            var e2 = AssertEx.Throws<ArgumentException>(() => { d["hoge"] = "a"; });
+            e2.Message.Is(s => s.Contains("indexer not found"));
         }
 
         public class GenericPrivateMock

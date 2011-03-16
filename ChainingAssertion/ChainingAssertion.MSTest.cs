@@ -343,8 +343,9 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             }
         }
 
-        #region DynamicObject
+        #region DynamicAccessor
 
+        /// <summary>to DynamicAccessor that can call private method/field/property/indexer.</summary>
         public static dynamic AsDynamic<T>(this T target)
         {
             return new DynamicAccessor<T>(target);
@@ -353,11 +354,57 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         private class DynamicAccessor<T> : DynamicObject
         {
             private readonly T target;
-            private readonly BindingFlags callFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            private static readonly BindingFlags TransparentFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             public DynamicAccessor(T target)
             {
                 this.target = target;
+            }
+
+            public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
+            {
+                try
+                {
+                    typeof(T).InvokeMember("Item", TransparentFlags | BindingFlags.SetProperty, null, target, indexes.Concat(new[] { value }).ToArray());
+                    return true;
+                }
+                catch (MissingMethodException) { throw new ArgumentException(string.Format("indexer not found : Type <{0}>", typeof(T).Name)); };
+            }
+
+            public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
+            {
+                try
+                {
+                    result = typeof(T).InvokeMember("Item", TransparentFlags | BindingFlags.GetProperty, null, target, indexes);
+                    return true;
+                }
+                catch (MissingMethodException) { throw new ArgumentException(string.Format("indexer not found : Type <{0}>", typeof(T).Name)); };
+            }
+
+            public override bool TrySetMember(SetMemberBinder binder, object value)
+            {
+                var accessor = new ReflectAccessor(target, binder.Name);
+                accessor.SetValue(value);
+                return true;
+            }
+
+            public override bool TryGetMember(GetMemberBinder binder, out object result)
+            {
+                var accessor = new ReflectAccessor(target, binder.Name);
+                result = accessor.GetValue();
+                return true;
+            }
+
+            public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+            {
+                var csharpBinder = binder.GetType().GetInterface("Microsoft.CSharp.RuntimeBinder.ICSharpInvokeOrInvokeMemberBinder");
+                if (csharpBinder == null) throw new ArgumentException("is not generic csharp code");
+
+                var typeArgs = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
+                var method = MatchMethod(binder.Name, args, typeArgs);
+                result = method.Invoke(target, args);
+
+                return true;
             }
 
             private Type AssignableBoundType(Type left, Type right)
@@ -371,10 +418,10 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             private MethodInfo MatchMethod(string methodName, object[] args, Type[] typeArgs)
             {
                 // name match
-                var nameMatched = typeof(T).GetMethods(callFlags)
+                var nameMatched = typeof(T).GetMethods(TransparentFlags)
                     .Where(mi => mi.Name == methodName)
                     .ToArray();
-                if (!nameMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not found from <{1}>", methodName, typeof(T).Name));
+                if (!nameMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not found : Type <{1}>", methodName, typeof(T).Name));
 
                 // parameter match
                 var parameterMatched = nameMatched
@@ -408,7 +455,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                                 }));
                     })
                     .ToArray();
-                if (!parameterMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not match arguments from <{1}>", methodName, typeof(T).Name));
+                if (!parameterMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not match arguments : Type <{1}>", methodName, typeof(T).Name));
 
                 if (typeArgs.Any())
                 {
@@ -417,7 +464,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     var typeMatched = parameterMatched
                         .Where(mi => mi.GetGenericArguments().Length == typeArgs.Length)
                         .ToArray();
-                    if (typeMatched.Length == 0) throw new ArgumentException(string.Format("\"{0}\" invalid type parameter from <{1}>", methodName, typeof(T).Name));
+                    if (typeMatched.Length == 0) throw new ArgumentException(string.Format("\"{0}\" invalid type parameter : Type <{1}>", methodName, typeof(T).Name));
                     if (typeMatched.Length == 1) return typeMatched[0].MakeGenericMethod(typeArgs);
                 }
                 else
@@ -431,7 +478,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     if (nongeneric != null && !nongeneric.IsGenericMethodDefinition) return nongeneric;
                     if (nongeneric != null && nongeneric.IsGenericMethodDefinition)
                     {
-                        throw new ArgumentException(string.Format("\"{0}\" not found type parameter from <{1}>", methodName, typeof(T).Name));
+                        throw new ArgumentException(string.Format("\"{0}\" not found type parameter : Type <{1}>", methodName, typeof(T).Name));
                     }
 
                     var methods = parameterMatched
@@ -456,7 +503,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                                 Args = genArgs.Select(a => a.Args.First().Type).ToArray()
                             };
                         })
-                        .Where(xs => xs != null)
+                        .Where(a => a != null)
                         .ToArray();
 
                     if (methods.Length == 1)
@@ -467,19 +514,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                 }
 
                 // ambiguous
-                throw new ArgumentException(string.Format("\"{0}\" ambiguous arguments from <{1}>", methodName, typeof(T).Name));
-            }
-
-            public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
-            {
-                var csharpBinder = binder.GetType().GetInterface("Microsoft.CSharp.RuntimeBinder.ICSharpInvokeOrInvokeMemberBinder");
-                if (csharpBinder == null) throw new ArgumentException("is not generic csharp code");
-
-                var typeArgs = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
-                var method = MatchMethod(binder.Name, args, typeArgs);
-                result = method.Invoke(target, args);
-
-                return true;
+                throw new ArgumentException(string.Format("\"{0}\" ambiguous arguments : Type <{1}>", methodName, typeof(T).Name));
             }
 
             private class EqualsComparer<TE> : IEqualityComparer<TE>
@@ -499,6 +534,33 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                 public int GetHashCode(TE obj)
                 {
                     return 0;
+                }
+            }
+
+            private class ReflectAccessor
+            {
+                public Func<object> GetValue { get; private set; }
+                public Action<object> SetValue { get; private set; }
+
+                public ReflectAccessor(T target, string name)
+                {
+                    var field = typeof(T).GetField(name, TransparentFlags);
+                    if (field != null)
+                    {
+                        GetValue = () => field.GetValue(target);
+                        SetValue = value => field.SetValue(target, value);
+                        return;
+                    }
+
+                    var prop = typeof(T).GetProperty(name, TransparentFlags);
+                    if (prop != null)
+                    {
+                        GetValue = () => prop.GetValue(target, null);
+                        SetValue = value => prop.SetValue(target, value, null);
+                        return;
+                    }
+
+                    throw new ArgumentException(string.Format("\"{0}\" not found : Type <{1}>", name, typeof(T).Name));
                 }
             }
         }

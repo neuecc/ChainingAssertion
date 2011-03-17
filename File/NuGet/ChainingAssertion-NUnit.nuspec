@@ -2,12 +2,12 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ChainingAssertion-NUnit</id>
-        <version>1.3.0.0</version>
+        <version>1.4.0.0</version>
         <title>Chaining Assertion for NUnit</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Method Chaining base UnitTesting Extension Methods for NUnit. This provides only one .cs file.</description>
+        <description>Method Chaining base UnitTesting Extension Methods and Dynamic Private Accessor for NUnit. This provides only one .cs file.</description>
         <language>en-US</language>
         <licenseUrl>http://chainingassertion.codeplex.com/license</licenseUrl>
         <projectUrl>http://chainingassertion.codeplex.com/</projectUrl>

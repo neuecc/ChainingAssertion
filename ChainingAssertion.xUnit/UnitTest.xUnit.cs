@@ -2,6 +2,7 @@
 using System.Linq;
 using Xunit;
 using Xunit.Extensions;
+using System.Collections.Generic;
 
 namespace ChainingAssertion
 {
@@ -115,6 +116,164 @@ namespace ChainingAssertion
                     new object[] {9, 4, "94"}
                 };
             }
+        }
+
+        // dynamic
+
+        public class PrivateMock
+        {
+            private string privateField = "homu";
+
+            private string PrivateProperty
+            {
+                get { return privateField + privateField; }
+                set { privateField = value; }
+            }
+
+            private string PrivateMethod(int count)
+            {
+                return string.Join("", Enumerable.Repeat(privateField, count));
+            }
+
+            private char this[int index]
+            {
+                get { return privateField[index]; }
+                set { privateField = new string(value, index); }
+            }
+
+            private string this[double index]
+            {
+                get { return index.ToString(); }
+                set { privateField = value + index.ToString(); }
+            }
+        }
+
+        [Fact]
+        public void DynamicTest()
+        {
+            var d = new PrivateMock().AsDynamic();
+
+            (d.privateField as string).Is("homu");
+            (d.PrivateProperty as string).Is("homuhomu");
+            (d.PrivateMethod(3) as string).Is("homuhomuhomu");
+
+            d.privateField = "mogu";
+            (d.privateField as string).Is("mogu");
+
+            d.PrivateProperty = "mami";
+            (d.privateField as string).Is("mami");
+
+            ((char)d[2]).Is('m');
+            d[3] = 'A';
+            (d.privateField as string).Is("AAA");
+
+            ((string)d[100.101]).Is("100.101");
+            d[72] = "Chihaya";
+            (d.privateField as string).Is("Chihaya72");
+
+            var e1 = Assert.Throws<ArgumentException>(() => { var x = d["hoge"]; });
+            e1.Message.Is(s => s.Contains("indexer not found"));
+
+            var e2 = Assert.Throws<ArgumentException>(() => { d["hoge"] = "a"; });
+            e2.Message.Is(s => s.Contains("indexer not found"));
+        }
+
+        public class GenericPrivateMock
+        {
+            private string PrivateGeneric<T1, T2>(T1 t1a, T2 t2a, T1 t1b)
+            {
+                return "a";
+            }
+
+            private string PrivateGeneric<T1, T2, T3>(T1 t1a, T2 t2a, T1 t1b)
+            {
+                return "b";
+            }
+
+            private string PrivateGeneric<T1, T2>(T1 t1a, T2 t2a, int i)
+            {
+                return "c";
+            }
+
+            private string PrivateGeneric<T1, T2>(T1 t1a, T2 t2a, int i, T2 t2b)
+            {
+                return "d";
+            }
+
+            private string PrivateGeneric(string t1a, string t2a, string t1b)
+            {
+                return "e";
+            }
+
+            private string PrivateGeneric<T1, T2, T3>(T3 t3a, T2 t2, T1 t1, T3 t3b)
+            {
+                return "f";
+            }
+
+            private string PrivateGeneric<T>()
+            {
+                return "g";
+            }
+
+            private string PrivateGeneric()
+            {
+                return "h";
+            }
+
+            private Type ReturnType<T>(T t1, T t2)
+            {
+                return typeof(T);
+            }
+
+            private Type ReturnType<T>(IEnumerable<T> t1, T t2)
+            {
+                return typeof(T);
+            }
+
+            private string DictGen<T1, T2, T3>(IDictionary<T1, IDictionary<T2, T3>> dict, T3 xxx)
+            {
+                return "dict";
+            }
+        }
+
+        [Fact]
+        public void GenericPrivateTest()
+        {
+            var d = new GenericPrivateMock().AsDynamic();
+
+            (d.PrivateGeneric("", 0, "") as string).Is("a");
+            (d.PrivateGeneric<string, int>("", 0, "") as string).Is("a");
+            (d.PrivateGeneric<int, string, long>(0, "", 0) as string).Is("b");
+            (d.PrivateGeneric(0.0, "", 0) as string).Is("c");
+            (d.PrivateGeneric<double, string>(0.0, "", 0) as string).Is("c");
+            (d.PrivateGeneric(0.0, "", 0, "") as string).Is("d");
+            (d.PrivateGeneric<double, string>(0.0, "", 0, "") as string).Is("d");
+            (d.PrivateGeneric("", "", "") as string).Is("e");
+            (d.PrivateGeneric(0.0, "", 0, 0.0) as string).Is("f");
+            (d.PrivateGeneric<int, string, double>(0.0, "", 0, 0.0) as string).Is("f");
+            (d.PrivateGeneric<int>() as string).Is("g");
+            (d.PrivateGeneric() as string).Is("h");
+            (d.ReturnType(0, 0) as Type).Is(typeof(int));
+
+            (d.PrivateGeneric(0, "", 0) as string).Is("c");
+            (d.PrivateGeneric<int, string>(0, "", 0) as string).Is("c");
+            (d.PrivateGeneric(0, 0, 0) as string).Is("c");
+            (d.ReturnType<IEnumerable<int>>(Enumerable.Range(1, 10), new List<int>()) as Type).Is(typeof(IEnumerable<int>));
+        }
+
+        [Fact]
+        public void GenericPrivateExceptionTest()
+        {
+            var d = new GenericPrivateMock().AsDynamic();
+
+            var e1 = Assert.Throws<ArgumentException>(() => d.HogeHoge());
+            e1.Message.Is(s => s.Contains("not found") && s.Contains("HogeHoge"));
+
+            var e2 = Assert.Throws<ArgumentException>(() => d.PrivateGeneric(1));
+            e2.Message.Is(s => s.Contains("not match arguments") && s.Contains("PrivateGeneric"));
+
+            var e3 = Assert.Throws<ArgumentException>(() => d.PrivateGeneric<int, int, int, int>(0, 0, 0));
+            e3.Message.Is(s => s.Contains("not match arguments") && s.Contains("PrivateGeneric"));
         }
     }
 }

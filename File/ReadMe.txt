@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.3.0.0 (Mar. 6th, 2011)
+ * ver 1.4.0.0 (Mar. 17th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -31,14 +31,13 @@ Enumerable.Range(1, 5).Is(1, 2, 3, 4, 5);
 | CollectionAssert
 | if you want to use CollectionAssert Methods then use Linq to Objects and Is
 
-new[] { 1, 3, 7, 8 }.Contains(8).Is(true);
-new[] { 1, 3, 7, 8 }.Count(i => i % 2 != 0).Is(3);
-new[] { 1, 3, 7, 8 }.Any().Is(true);
-new[] { 1, 3, 7, 8 }.All(i => i < 5).Is(false);
-
-// IsOrdered
-var array = new[] { 1, 5, 10, 100 };
-array.Is(array.OrderBy(x => x));
+var array = new[] { 1, 3, 7, 8 };
+array.Count().Is(4);
+array.Contains(8).Is(true);
+array.All(i => i < 5).Is(false);
+array.Any().Is(true);
+new int[] { }.Any().Is(false);   // IsEmpty
+array.OrderBy(x => x).Is(array); // IsOrdered
 
 | Other Assertions
 
@@ -71,6 +70,40 @@ lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
 
 // or you can use Linq to Objects - SequenceEqual
 lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+
+| DynamicAccessor
+
+// AsDynamic convert to "dynamic" that can call private method/property/field/indexer.
+
+// a class and private field/property/method.
+public class PrivateMock
+{
+    private string privateField = "homu";
+
+    private string PrivateProperty
+    {
+        get { return privateField + privateField; }
+        set { privateField = value; }
+    }
+
+    private string PrivateMethod(int count)
+    {
+        return string.Join("", Enumerable.Repeat(privateField, count));
+    }
+}
+
+// call private property.
+var actual = new PrivateMock().AsDynamic().PrivateProperty;
+Assert.AreEqual("homuhomu", actual);
+
+// dynamic can't invoke extension methods.
+// if you want to invoke "Is" then cast type.
+(new PrivateMock().AsDynamic().PrivateMethod(3) as string).Is("homuhomuhomu");
+
+// set value
+var mock = new PrivateMock().AsDynamic();
+mock.PrivateProperty = "mogumogu";
+(mock.privateField as string).Is("mogumogu");
 
 | Exception Test
 
@@ -136,6 +169,10 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2011-03-17 ver 1.4.0.0
+    Add Methods
+        AsDynamic(to DynamicAccessor that can call private method/field/property/indexer).
+
 2011-03-06 ver 1.3.0.0
     Add Methods
         AssertEx.Catch

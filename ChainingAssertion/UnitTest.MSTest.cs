@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ChainingAssertion
 {
@@ -33,13 +34,13 @@ namespace ChainingAssertion
         public void CollectionTest()
         {
             // if you want to use CollectionAssert Methods then use Linq to Objects and Is
+            
             var array = new[] { 1, 3, 7, 8 };
-
             array.Count().Is(4);
             array.Contains(8).Is(true);
             array.All(i => i < 5).Is(false);
             array.Any().Is(true);
-            new int[] { }.Any().Is(false); // IsEmpty
+            new int[] { }.Any().Is(false);   // IsEmpty
             array.OrderBy(x => x).Is(array); // IsOrdered
         }
 
@@ -102,37 +103,8 @@ namespace ChainingAssertion
 
             });
         }
-
-        [TestMethod]
-        [TestCase(1, 2, 3)]
-        [TestCase(10, 20, 30)]
-        [TestCase(100, 200, 300)]
-        public void TestCaseTest()
-        {
-            TestContext.Run((int x, int y, int z) =>
-            {
-                (x + y).Is(z);
-                (x + y + z).Is(i => i < 1000);
-            });
-        }
-
-        [TestMethod]
-        [TestCaseSource("toaruSource")]
-        public void TestTestCaseSource()
-        {
-            TestContext.Run((int x, int y, string z) =>
-            {
-                string.Concat(x, y).Is(z);
-            });
-        }
-
-        public static object[] toaruSource = new[]
-        {
-            new object[] {1, 1, "11"},
-            new object[] {5, 3, "53"},
-            new object[] {9, 4, "94"}
-        };
-
+        
+        // dynamic
 
         public class PrivateMock
         {
@@ -229,14 +201,24 @@ namespace ChainingAssertion
                 return "g";
             }
 
+            private string PrivateGeneric()
+            {
+                return "h";
+            }
+
             private Type ReturnType<T>(T t1, T t2)
             {
                 return typeof(T);
             }
 
-            public Type ReturnType<T>(IEnumerable<T> t1, T t2)
+            private Type ReturnType<T>(IEnumerable<T> t1, T t2)
             {
                 return typeof(T);
+            }
+
+            private string DictGen<T1, T2, T3>(IDictionary<T1, IDictionary<T2, T3>> dict, T3 xxx)
+            {
+                return "dict";
             }
         }
 
@@ -244,9 +226,6 @@ namespace ChainingAssertion
         public void GenericPrivateTest()
         {
             var d = new GenericPrivateMock().AsDynamic();
-
-            // (d.PrivateGeneric(0, "", 0) as string).Is("a");
-            // (d.PrivateGeneric<int,string>(0, "", 0) as string).Is("a");
 
             (d.PrivateGeneric("", 0, "") as string).Is("a");
             (d.PrivateGeneric<string, int>("", 0, "") as string).Is("a");
@@ -259,10 +238,13 @@ namespace ChainingAssertion
             (d.PrivateGeneric(0.0, "", 0, 0.0) as string).Is("f");
             (d.PrivateGeneric<int, string, double>(0.0, "", 0, 0.0) as string).Is("f");
             (d.PrivateGeneric<int>() as string).Is("g");
-
+            (d.PrivateGeneric() as string).Is("h");
             (d.ReturnType(0, 0) as Type).Is(typeof(int));
 
-            // (d.ReturnType(Enumerable.Range(1, 10), 0) as Type).Is(typeof(int));
+            (d.PrivateGeneric(0, "", 0) as string).Is("c");
+            (d.PrivateGeneric<int, string>(0, "", 0) as string).Is("c");
+            (d.PrivateGeneric(0, 0, 0) as string).Is("c");
+            (d.ReturnType<IEnumerable<int>>(Enumerable.Range(1, 10), new List<int>()) as Type).Is(typeof(IEnumerable<int>));
         }
 
         [TestMethod]
@@ -276,15 +258,55 @@ namespace ChainingAssertion
             var e2 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric(1));
             e2.Message.Is(s => s.Contains("not match arguments") && s.Contains("PrivateGeneric"));
 
-            var e3 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric());
-            e3.Message.Is(s => s.Contains("not found type parameter") && s.Contains("PrivateGeneric"));
-
-            var e4 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric<int, int, int, int>(0, 0, 0));
-            e4.Message.Is(s => s.Contains("invalid type parameter") && s.Contains("PrivateGeneric"));
-
-            var e5 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric(0, 0, 0));
-            e5.Message.Is(s => s.Contains("ambiguous") && s.Contains("PrivateGeneric"));
+            var e3 = AssertEx.Throws<ArgumentException>(() => d.PrivateGeneric<int, int, int, int>(0, 0, 0));
+            e3.Message.Is(s => s.Contains("not match arguments") && s.Contains("PrivateGeneric"));
         }
+
+        [TestMethod]
+        [Ignore]
+        public void DynamicNotSupportedCase()
+        {
+            var d = new GenericPrivateMock().AsDynamic();
+
+            (d.ReturnType(Enumerable.Range(1, 10), 0) as Type).Is(typeof(int));
+            (d.ReturnType<int>(Enumerable.Range(1, 10), 0) as Type).Is(typeof(int));
+
+            var dict = new Dictionary<int, IDictionary<string, double>>();
+            (d.DictGen(dict, 1.9) as string).Is("dict");
+            (d.DictGen<int, string, double>(dict, 1.9) as string).Is("dict");
+        }
+
+        // testcase
+
+        [TestMethod]
+        [TestCase(1, 2, 3)]
+        [TestCase(10, 20, 30)]
+        [TestCase(100, 200, 300)]
+        public void TestCaseTest()
+        {
+            TestContext.Run((int x, int y, int z) =>
+            {
+                (x + y).Is(z);
+                (x + y + z).Is(i => i < 1000);
+            });
+        }
+
+        [TestMethod]
+        [TestCaseSource("toaruSource")]
+        public void TestTestCaseSource()
+        {
+            TestContext.Run((int x, int y, string z) =>
+            {
+                string.Concat(x, y).Is(z);
+            });
+        }
+
+        public static object[] toaruSource = new[]
+        {
+            new object[] {1, 1, "11"},
+            new object[] {5, 3, "53"},
+            new object[] {9, 4, "94"}
+        };
 
         // exceptions
 

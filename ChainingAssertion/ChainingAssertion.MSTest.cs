@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.3.0.0 (Mar. 6th, 2011)
+ * ver 1.4.0.0 (Mar. 17th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -23,15 +23,14 @@
  * 
  * | CollectionAssert
  * | if you want to use CollectionAssert Methods then use Linq to Objects and Is
- *
- * new[] { 1, 3, 7, 8 }.Contains(8).Is(true);
- * new[] { 1, 3, 7, 8 }.Count(i => i % 2 != 0).Is(3);
- * new[] { 1, 3, 7, 8 }.Any().Is(true);
- * new[] { 1, 3, 7, 8 }.All(i => i < 5).Is(false);
- *
- * // IsOrdered
- * var array = new[] { 1, 5, 10, 100 };
- * array.OrderBy(x => x).Is(array);
+ * 
+ * var array = new[] { 1, 3, 7, 8 };
+ * array.Count().Is(4);
+ * array.Contains(8).Is(true);
+ * array.All(i => i < 5).Is(false);
+ * array.Any().Is(true);
+ * new int[] { }.Any().Is(false);   // IsEmpty
+ * array.OrderBy(x => x).Is(array); // IsOrdered
  *
  * | Other Assertions
  * 
@@ -64,6 +63,40 @@
  *
  * // or you can use Linq to Objects - SequenceEqual
  * lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+ * 
+ * | DynamicAccessor
+ * 
+ * // AsDynamic convert to "dynamic" that can call private method/property/field/indexer.
+ * 
+ * // a class and private field/property/method.
+ * public class PrivateMock
+ * {
+ *     private string privateField = "homu";
+ * 
+ *     private string PrivateProperty
+ *     {
+ *         get { return privateField + privateField; }
+ *         set { privateField = value; }
+ *     }
+ * 
+ *     private string PrivateMethod(int count)
+ *     {
+ *         return string.Join("", Enumerable.Repeat(privateField, count));
+ *     }
+ * }
+ * 
+ * // call private property.
+ * var actual = new PrivateMock().AsDynamic().PrivateProperty;
+ * Assert.AreEqual("homuhomu", actual);
+ * 
+ * // dynamic can't invoke extension methods.
+ * // if you want to invoke "Is" then cast type.
+ * (new PrivateMock().AsDynamic().PrivateMethod(3) as string).Is("homuhomuhomu");
+ * 
+ * // set value
+ * var mock = new PrivateMock().AsDynamic();
+ * mock.PrivateProperty = "mogumogu";
+ * (mock.privateField as string).Is("mogumogu");
  * 
  * | Exception Test
  * 
@@ -133,10 +166,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Dynamic;
 
 namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
@@ -423,115 +456,104 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     .ToArray();
                 if (!nameMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not found : Type <{1}>", methodName, typeof(T).Name));
 
-                // parameter match
-                var parameterMatched = nameMatched
-                    .Where(mi =>
+                // type inference
+                var typedMethods = nameMatched
+                    .Select(mi =>
                     {
-                        var dict = new Dictionary<Type, Type>(); // <GenericType, MatchType>
-                        return mi.GetParameters()
-                            .Select(pi => pi.ParameterType)
-                            .SequenceEqual(args.Select(o => o.GetType()),
-                                new EqualsComparer<Type>((x, y) =>
-                                {
-                                    if (x.IsGenericParameter)
-                                    {
-                                        if (dict.ContainsKey(x))
-                                        {
-                                            var t = AssignableBoundType(dict[x], y);
-                                            if (t == null) return false;
-                                            else
-                                            {
-                                                dict[x] = t;
-                                                return true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            dict.Add(x, y);
-                                            return true;
-                                        }
-                                    }
-                                    return x.Equals(y);
-                                }));
-                    })
-                    .ToArray();
-                if (!parameterMatched.Any()) throw new ArgumentException(string.Format("\"{0}\" not match arguments : Type <{1}>", methodName, typeof(T).Name));
+                        var genericArguments = mi.GetGenericArguments();
 
-                if (typeArgs.Any())
-                {
-                    // with typeArgs
-
-                    var typeMatched = parameterMatched
-                        .Where(mi => mi.GetGenericArguments().Length == typeArgs.Length)
-                        .ToArray();
-                    if (typeMatched.Length == 0) throw new ArgumentException(string.Format("\"{0}\" invalid type parameter : Type <{1}>", methodName, typeof(T).Name));
-                    if (typeMatched.Length == 1) return typeMatched[0].MakeGenericMethod(typeArgs);
-                }
-                else
-                {
-                    // from parameter only
-
-                    var nongeneric = parameterMatched.SingleOrDefault(mi =>
-                        mi.GetParameters()
-                          .Select(pi => pi.ParameterType)
-                          .All(t => !t.IsGenericParameter));
-                    if (nongeneric != null && !nongeneric.IsGenericMethodDefinition) return nongeneric;
-                    if (nongeneric != null && nongeneric.IsGenericMethodDefinition)
-                    {
-                        throw new ArgumentException(string.Format("\"{0}\" not found type parameter : Type <{1}>", methodName, typeof(T).Name));
-                    }
-
-                    var methods = parameterMatched
-                        .Select(method =>
+                        if (!typeArgs.Any() && !genericArguments.Any()) // non generic method
                         {
-                            var parameterGenericTypes = method.GetParameters()
+                            return new
+                            {
+                                MethodInfo = mi,
+                                TypeParameters = default(Dictionary<Type, Type>)
+                            };
+                        }
+                        else if (!typeArgs.Any())
+                        {
+                            var parameterGenericTypes = mi.GetParameters()
                                 .Select(pi => pi.ParameterType)
-                                .Zip(args.Select(o => o.GetType()), (Parameter, Argument) => new { Parameter, Argument })
-                                .GroupBy(a => a.Parameter, a => a.Argument)
+                                .Zip(args.Select(o => o.GetType()), Tuple.Create)
+                                .GroupBy(a => a.Item1, a => a.Item2)
                                 .Where(g => g.Key.IsGenericParameter)
-                                .Select(g => new { g.Key, Type = g.Aggregate(AssignableBoundType) });
+                                .Select(g => new { g.Key, Type = g.Aggregate(AssignableBoundType) })
+                                .Where(a => a.Type != null);
 
-                            var genArgs = method.GetGenericArguments()
-                                    .GroupJoin(parameterGenericTypes, x => x, y => y.Key, (Key, Args) => new { Key, Args })
-                                    .ToArray();
-
-                            if (!genArgs.All(a => a.Args.Any())) return null;
+                            var typeParams = genericArguments
+                                .GroupJoin(parameterGenericTypes, x => x, x => x.Key, (_, Args) => Args)
+                                .ToArray();
+                            if (!typeParams.All(xs => xs.Any())) return null; // types short
 
                             return new
                             {
-                                MethodInfo = method,
-                                Args = genArgs.Select(a => a.Args.First().Type).ToArray()
+                                MethodInfo = mi,
+                                TypeParameters = typeParams
+                                    .Select(xs => xs.First())
+                                    .ToDictionary(a => a.Key, a => a.Type)
                             };
-                        })
-                        .Where(a => a != null)
-                        .ToArray();
+                        }
+                        else
+                        {
+                            if (genericArguments.Length != typeArgs.Length) return null;
 
-                    if (methods.Length == 1)
-                    {
-                        var method = methods[0];
-                        return method.MethodInfo.MakeGenericMethod(method.Args);
-                    }
-                }
+                            return new
+                            {
+                                MethodInfo = mi,
+                                TypeParameters = genericArguments
+                                    .Zip(typeArgs, Tuple.Create)
+                                    .ToDictionary(t => t.Item1, t => t.Item2)
+                            };
+                        }
+                    })
+                    .Where(a => a != null)
+                    .Where(a => a.MethodInfo
+                        .GetParameters()
+                        .Select(pi => pi.ParameterType)
+                        .SequenceEqual(args.Select(o => o.GetType()), new EqualsComparer<Type>((x, y) =>
+                            (x.IsGenericParameter)
+                                ? a.TypeParameters[x].IsAssignableFrom(y)
+                                : x.Equals(y)))
+                    )
+                    .ToArray();
+
+                if (!typedMethods.Any()) throw new ArgumentException(string.Format("\"{0}\" not match arguments : Type <{1}>", methodName, typeof(T).Name));
+
+                // nongeneric
+                var nongeneric = typedMethods.Where(a => a.TypeParameters == null).ToArray();
+                if (nongeneric.Length == 1) return nongeneric[0].MethodInfo;
+
+                // generic--
+                var lessGeneric = typedMethods
+                    .Where(a => !a.MethodInfo.GetParameters().All(pi => pi.ParameterType.IsGenericParameter))
+                    .ToArray();
+
+                // generic
+                var generic = (typedMethods.Length == 1)
+                    ? typedMethods[0]
+                    : (lessGeneric.Length == 1 ? lessGeneric[0] : null);
+
+                if (generic != null) return generic.MethodInfo.MakeGenericMethod(generic.TypeParameters.Select(kvp => kvp.Value).ToArray());
 
                 // ambiguous
                 throw new ArgumentException(string.Format("\"{0}\" ambiguous arguments : Type <{1}>", methodName, typeof(T).Name));
             }
 
-            private class EqualsComparer<TE> : IEqualityComparer<TE>
+            private class EqualsComparer<TX> : IEqualityComparer<TX>
             {
-                private readonly Func<TE, TE, bool> equals;
+                private readonly Func<TX, TX, bool> equals;
 
-                public EqualsComparer(Func<TE, TE, bool> equals)
+                public EqualsComparer(Func<TX, TX, bool> equals)
                 {
                     this.equals = equals;
                 }
 
-                public bool Equals(TE x, TE y)
+                public bool Equals(TX x, TX y)
                 {
                     return equals(x, y);
                 }
 
-                public int GetHashCode(TE obj)
+                public int GetHashCode(TX obj)
                 {
                     return 0;
                 }

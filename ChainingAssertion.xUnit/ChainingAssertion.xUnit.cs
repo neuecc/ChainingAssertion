@@ -329,7 +329,7 @@ namespace Xunit
             public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
             {
                 var csharpBinder = binder.GetType().GetInterface("Microsoft.CSharp.RuntimeBinder.ICSharpInvokeOrInvokeMemberBinder");
-                if (csharpBinder == null) throw new ArgumentException("is not generic csharp code");
+                if (csharpBinder == null) throw new ArgumentException("is not csharp code");
 
                 var typeArgs = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
                 var method = MatchMethod(binder.Name, args, typeArgs);

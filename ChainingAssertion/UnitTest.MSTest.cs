@@ -121,6 +121,16 @@ namespace ChainingAssertion
                 return string.Join("", Enumerable.Repeat(privateField, count));
             }
 
+            private bool NonParameterMethod()
+            {
+                return true;
+            }
+
+            private void VoidMethod(List<int> list)
+            {
+                list.Add(-100);
+            }
+
             private string NullableMethod(IEnumerable<int> xs)
             {
                 return "enumerable";
@@ -166,6 +176,12 @@ namespace ChainingAssertion
             ((string)d[100.101]).Is("100.101");
             d[72] = "Chihaya";
             (d.privateField as string).Is("Chihaya72");
+
+            ((bool)d.NonParameterMethod()).Is(true);
+            var list = new List<int>();
+            d.VoidMethod(list);
+            list[0].Is(-100);
+            list.Count.Is(1);
 
             var e1 = AssertEx.Throws<ArgumentException>(() => { var x = d["hoge"]; });
             e1.Message.Is(s => s.Contains("indexer not found"));

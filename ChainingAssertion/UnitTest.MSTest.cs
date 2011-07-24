@@ -34,7 +34,7 @@ namespace ChainingAssertion
         public void CollectionTest()
         {
             // if you want to use CollectionAssert Methods then use Linq to Objects and Is
-            
+
             var array = new[] { 1, 3, 7, 8 };
             array.Count().Is(4);
             array.Contains(8).Is(true);
@@ -103,7 +103,7 @@ namespace ChainingAssertion
 
             });
         }
-        
+
         // dynamic
 
         public class PrivateMock
@@ -119,6 +119,16 @@ namespace ChainingAssertion
             private string PrivateMethod(int count)
             {
                 return string.Join("", Enumerable.Repeat(privateField, count));
+            }
+
+            private string NullableMethod(string s)
+            {
+                return "string";
+            }
+
+            private string NullableMethod(List<int> l)
+            {
+                return "list";
             }
 
             private char this[int index]
@@ -162,6 +172,18 @@ namespace ChainingAssertion
 
             var e2 = AssertEx.Throws<ArgumentException>(() => { d["hoge"] = "a"; });
             e2.Message.Is(s => s.Contains("indexer not found"));
+        }
+
+        [TestMethod]
+        public void DynamicNullableTest()
+        {
+            var d = new PrivateMock().AsDynamic();
+
+            (d.NullableMethod((string)null) as string).Is("string");
+            (d.NullableMethod((List<int>)null) as string).Is("list");
+
+            (d.NullableMethod("test") as string).Is("string");
+            (d.NullableMethod(new List<int>()) as string).Is("list");
         }
 
         public class GenericPrivateMock

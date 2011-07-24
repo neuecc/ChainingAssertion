@@ -121,12 +121,12 @@ namespace ChainingAssertion
                 return string.Join("", Enumerable.Repeat(privateField, count));
             }
 
-            private string NullableMethod(string s)
+            private string NullableMethod(IEnumerable<int> xs)
             {
-                return "string";
+                return "enumerable";
             }
 
-            private string NullableMethod(List<int> l)
+            private string NullableMethod(List<int> xs)
             {
                 return "list";
             }
@@ -179,10 +179,11 @@ namespace ChainingAssertion
         {
             var d = new PrivateMock().AsDynamic();
 
-            (d.NullableMethod((string)null) as string).Is("string");
+            (d.NullableMethod((IEnumerable<int>)null) as string).Is("enumerable");
             (d.NullableMethod((List<int>)null) as string).Is("list");
 
-            (d.NullableMethod("test") as string).Is("string");
+            (d.NullableMethod(Enumerable.Range(1, 10)) as string).Is("enumerable");
+            (d.NullableMethod(new List<int>().AsEnumerable()) as string).Is("enumerable");
             (d.NullableMethod(new List<int>()) as string).Is("list");
         }
 

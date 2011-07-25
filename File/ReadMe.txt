@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.4.0.0 (Mar. 17th, 2011)
+ * ver 1.5.0.0 (Jul. 25th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -169,9 +169,16 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2011-07-25 ver 1.5.0.0
+    Fix Bugs
+        AsDynamic can't call when parameter is null
+    New Feature
+        MSTest's TestCase - can invoke from separeted dll
+        AsDynamic - improvement of the precision of the method match
+
 2011-03-17 ver 1.4.0.0
     Add Methods
-        AsDynamic(to DynamicAccessor that can call private method/field/property/indexer).
+        AsDynamic(to DynamicAccessor that can call private method/field/property/indexer)
 
 2011-03-06 ver 1.3.0.0
     Add Methods
@@ -183,7 +190,7 @@ public static object[] toaruSource = new[]
     Add Methods
       AssertEx.Throws, AssertEx.DoesNotThrow, Is(EqualityComparer overload)
     Add Files
-      NUnit, xUnit.NET, MbUnit version.
+      NUnit, xUnit.NET, MbUnit version
 
 2011-02-28 ver 1.1.0.1
     Fix Bugs - IsNot

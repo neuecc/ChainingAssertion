@@ -128,6 +128,26 @@ namespace ChainingAssertion
                 return string.Join("", Enumerable.Repeat(privateField, count));
             }
 
+            private bool NonParameterMethod()
+            {
+                return true;
+            }
+
+            private void VoidMethod(List<int> list)
+            {
+                list.Add(-100);
+            }
+
+            private string NullableMethod(IEnumerable<int> xs)
+            {
+                return "enumerable";
+            }
+
+            private string NullableMethod(List<int> xs)
+            {
+                return "list";
+            }
+
             private char this[int index]
             {
                 get { return privateField[index]; }
@@ -164,11 +184,30 @@ namespace ChainingAssertion
             d[72] = "Chihaya";
             (d.privateField as string).Is("Chihaya72");
 
+            ((bool)d.NonParameterMethod()).Is(true);
+            var list = new List<int>();
+            d.VoidMethod(list);
+            list[0].Is(-100);
+            list.Count.Is(1);
+
             var e1 = Assert.Throws<ArgumentException>(() => { var x = d["hoge"]; });
             e1.Message.Is(s => s.Contains("indexer not found"));
 
             var e2 = Assert.Throws<ArgumentException>(() => { d["hoge"] = "a"; });
             e2.Message.Is(s => s.Contains("indexer not found"));
+        }
+
+        [Test]
+        public void DynamicNullableTest()
+        {
+            var d = new PrivateMock().AsDynamic();
+
+            (d.NullableMethod((IEnumerable<int>)null) as string).Is("enumerable");
+            (d.NullableMethod((List<int>)null) as string).Is("list");
+
+            (d.NullableMethod(Enumerable.Range(1, 10)) as string).Is("enumerable");
+            (d.NullableMethod(new List<int>().AsEnumerable()) as string).Is("enumerable");
+            (d.NullableMethod(new List<int>()) as string).Is("list");
         }
 
         public class GenericPrivateMock

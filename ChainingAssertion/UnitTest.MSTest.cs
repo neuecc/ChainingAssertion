@@ -34,7 +34,7 @@ namespace ChainingAssertion
         public void CollectionTest()
         {
             // if you want to use CollectionAssert Methods then use Linq to Objects and Is
-            
+
             var array = new[] { 1, 3, 7, 8 };
             array.Count().Is(4);
             array.Contains(8).Is(true);
@@ -103,7 +103,7 @@ namespace ChainingAssertion
 
             });
         }
-        
+
         // dynamic
 
         public class PrivateMock
@@ -119,6 +119,26 @@ namespace ChainingAssertion
             private string PrivateMethod(int count)
             {
                 return string.Join("", Enumerable.Repeat(privateField, count));
+            }
+
+            private bool NonParameterMethod()
+            {
+                return true;
+            }
+
+            private void VoidMethod(List<int> list)
+            {
+                list.Add(-100);
+            }
+
+            private string NullableMethod(IEnumerable<int> xs)
+            {
+                return "enumerable";
+            }
+
+            private string NullableMethod(List<int> xs)
+            {
+                return "list";
             }
 
             private char this[int index]
@@ -157,11 +177,30 @@ namespace ChainingAssertion
             d[72] = "Chihaya";
             (d.privateField as string).Is("Chihaya72");
 
+            ((bool)d.NonParameterMethod()).Is(true);
+            var list = new List<int>();
+            d.VoidMethod(list);
+            list[0].Is(-100);
+            list.Count.Is(1);
+
             var e1 = AssertEx.Throws<ArgumentException>(() => { var x = d["hoge"]; });
             e1.Message.Is(s => s.Contains("indexer not found"));
 
             var e2 = AssertEx.Throws<ArgumentException>(() => { d["hoge"] = "a"; });
             e2.Message.Is(s => s.Contains("indexer not found"));
+        }
+
+        [TestMethod]
+        public void DynamicNullableTest()
+        {
+            var d = new PrivateMock().AsDynamic();
+
+            (d.NullableMethod((IEnumerable<int>)null) as string).Is("enumerable");
+            (d.NullableMethod((List<int>)null) as string).Is("list");
+
+            (d.NullableMethod(Enumerable.Range(1, 10)) as string).Is("enumerable");
+            (d.NullableMethod(new List<int>().AsEnumerable()) as string).Is("enumerable");
+            (d.NullableMethod(new List<int>()) as string).Is("list");
         }
 
         public class GenericPrivateMock

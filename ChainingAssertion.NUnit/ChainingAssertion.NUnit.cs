@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for NUnit
- * ver 1.4.0.0 (Mar. 17th, 2011)
+ * ver 1.5.0.0 (Jul. 25th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -306,10 +306,18 @@ namespace NUnit.Framework
             public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
             {
                 var csharpBinder = binder.GetType().GetInterface("Microsoft.CSharp.RuntimeBinder.ICSharpInvokeOrInvokeMemberBinder");
-                if (csharpBinder == null) throw new ArgumentException("is not generic csharp code");
+                if (csharpBinder == null) throw new ArgumentException("is not csharp code");
 
                 var typeArgs = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
-                var method = MatchMethod(binder.Name, args, typeArgs);
+                var parameterTypes = (binder.GetType().GetField("Cache", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(binder) as Dictionary<Type, object>)
+                    .First()
+                    .Key
+                    .GetGenericArguments()
+                    .Skip(2)
+                    .Take(args.Length)
+                    .ToArray();
+
+                var method = MatchMethod(binder.Name, args, typeArgs, parameterTypes);
                 result = method.Invoke(target, args);
 
                 return true;
@@ -323,7 +331,7 @@ namespace NUnit.Framework
                     : null;
             }
 
-            private MethodInfo MatchMethod(string methodName, object[] args, Type[] typeArgs)
+            private MethodInfo MatchMethod(string methodName, object[] args, Type[] typeArgs, Type[] parameterTypes)
             {
                 // name match
                 var nameMatched = typeof(T).GetMethods(TransparentFlags)
@@ -349,7 +357,7 @@ namespace NUnit.Framework
                         {
                             var parameterGenericTypes = mi.GetParameters()
                                 .Select(pi => pi.ParameterType)
-                                .Zip(args.Select(o => o.GetType()), Tuple.Create)
+                                .Zip(parameterTypes, Tuple.Create)
                                 .GroupBy(a => a.Item1, a => a.Item2)
                                 .Where(g => g.Key.IsGenericParameter)
                                 .Select(g => new { g.Key, Type = g.Aggregate(AssignableBoundType) })
@@ -385,7 +393,7 @@ namespace NUnit.Framework
                     .Where(a => a.MethodInfo
                         .GetParameters()
                         .Select(pi => pi.ParameterType)
-                        .SequenceEqual(args.Select(o => o.GetType()), new EqualsComparer<Type>((x, y) =>
+                        .SequenceEqual(parameterTypes, new EqualsComparer<Type>((x, y) =>
                             (x.IsGenericParameter)
                                 ? a.TypeParameters[x].IsAssignableFrom(y)
                                 : x.Equals(y)))

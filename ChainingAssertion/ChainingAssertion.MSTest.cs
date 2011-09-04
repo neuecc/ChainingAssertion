@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.4.0.0 (Mar. 17th, 2011)
+ * ver 1.5.0.0 (Jul. 25th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -431,10 +431,18 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
             {
                 var csharpBinder = binder.GetType().GetInterface("Microsoft.CSharp.RuntimeBinder.ICSharpInvokeOrInvokeMemberBinder");
-                if (csharpBinder == null) throw new ArgumentException("is not generic csharp code");
+                if (csharpBinder == null) throw new ArgumentException("is not csharp code");
 
                 var typeArgs = (csharpBinder.GetProperty("TypeArguments").GetValue(binder, null) as IList<Type>).ToArray();
-                var method = MatchMethod(binder.Name, args, typeArgs);
+                var parameterTypes = (binder.GetType().GetField("Cache", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(binder) as Dictionary<Type, object>)
+                    .First()
+                    .Key
+                    .GetGenericArguments()
+                    .Skip(2)
+                    .Take(args.Length)
+                    .ToArray();
+
+                var method = MatchMethod(binder.Name, args, typeArgs, parameterTypes);
                 result = method.Invoke(target, args);
 
                 return true;
@@ -448,7 +456,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     : null;
             }
 
-            private MethodInfo MatchMethod(string methodName, object[] args, Type[] typeArgs)
+            private MethodInfo MatchMethod(string methodName, object[] args, Type[] typeArgs, Type[] parameterTypes)
             {
                 // name match
                 var nameMatched = typeof(T).GetMethods(TransparentFlags)
@@ -474,7 +482,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                         {
                             var parameterGenericTypes = mi.GetParameters()
                                 .Select(pi => pi.ParameterType)
-                                .Zip(args.Select(o => o.GetType()), Tuple.Create)
+                                .Zip(parameterTypes, Tuple.Create)
                                 .GroupBy(a => a.Item1, a => a.Item2)
                                 .Where(g => g.Key.IsGenericParameter)
                                 .Select(g => new { g.Key, Type = g.Aggregate(AssignableBoundType) })
@@ -510,7 +518,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                     .Where(a => a.MethodInfo
                         .GetParameters()
                         .Select(pi => pi.ParameterType)
-                        .SequenceEqual(args.Select(o => o.GetType()), new EqualsComparer<Type>((x, y) =>
+                        .SequenceEqual(parameterTypes, new EqualsComparer<Type>((x, y) =>
                             (x.IsGenericParameter)
                                 ? a.TypeParameters[x].IsAssignableFrom(y)
                                 : x.Equals(y)))
@@ -620,10 +628,9 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 
     public static class TestContextExtensions
     {
-        private static IEnumerable<object[]> GetParameters(TestContext context)
+        private static IEnumerable<object[]> GetParameters(Type classType, string methodName)
         {
-            var classType = Type.GetType(context.FullyQualifiedTestClassName);
-            var method = classType.GetMethod(context.TestName);
+            var method = classType.GetMethod(methodName);
 
             var testCase = method
                 .GetCustomAttributes(typeof(TestCaseAttribute), false)
@@ -649,7 +656,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1>(this TestContext context, Action<T1> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0]
@@ -660,7 +668,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2>(this TestContext context, Action<T1, T2> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -672,7 +681,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3>(this TestContext context, Action<T1, T2, T3> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -685,7 +695,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4>(this TestContext context, Action<T1, T2, T3, T4> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -699,7 +710,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5>(this TestContext context, Action<T1, T2, T3, T4, T5> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -714,7 +726,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6>(this TestContext context, Action<T1, T2, T3, T4, T5, T6> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -730,7 +743,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -747,7 +761,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -765,7 +780,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -784,7 +800,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -804,7 +821,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -825,7 +843,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -847,7 +866,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -870,7 +890,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -894,7 +915,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],
@@ -919,7 +941,8 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         /// <summary>Run Parameterized Test marked by TestCase Attribute.</summary>
         public static void Run<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(this TestContext context, Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> assertion)
         {
-            foreach (var parameters in GetParameters(context))
+            var type = Assembly.GetCallingAssembly().GetType(context.FullyQualifiedTestClassName);
+            foreach (var parameters in GetParameters(type, context.TestName))
             {
                 assertion(
                     (T1)parameters[0],

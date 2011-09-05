@@ -345,7 +345,12 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             {
                 return exception;
             }
-            throw new AssertFailedException("Throwed Exception is not ContractException", exception);
+
+            var additionalMsg = string.IsNullOrEmpty(message) ? "" : ", " + message;
+            var formatted = string.Format("Throwed Exception is not ContractException. Catched:{0}{1}", 
+                exception.GetType().Name, additionalMsg);
+
+            throw new AssertFailedException(formatted);
         }
 
         /// <summary>does not throw any exceptions</summary>

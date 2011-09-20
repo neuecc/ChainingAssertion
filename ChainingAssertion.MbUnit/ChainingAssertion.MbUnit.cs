@@ -108,11 +108,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Gallio.Common;
+using System.Diagnostics.Contracts;
 
 namespace MbUnit.Framework
 {
     #region Extensions
 
+    [ContractVerification(false)]
     public static partial class AssertEx
     {
         /// <summary>Assert.AreEqual, if T is IEnumerable then Assert.AreElementsEqual</summary>

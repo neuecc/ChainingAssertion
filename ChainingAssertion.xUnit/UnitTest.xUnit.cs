@@ -314,5 +314,29 @@ namespace ChainingAssertion
             var e3 = Assert.Throws<ArgumentException>(() => d.PrivateGeneric<int, int, int, int>(0, 0, 0));
             e3.Message.Is(s => s.Contains("not match arguments") && s.Contains("PrivateGeneric"));
         }
+
+        private class Person
+        {
+            public int Age { get; set; }
+            public string FamilyName { get; set; }
+            public string GivenName { get; set; }
+        }
+
+        [Fact]
+        public void DumpTest()
+        {
+            var count = new List<int>() { 1, 2, 3 };
+            var person = new Person { Age = 50, FamilyName = "Yamamoto", GivenName = "Tasuke" };
+            try
+            {
+                person.Is(p => p.Age < count.Count && p.FamilyName == "Yamada" && p.GivenName == "Tarou");
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Contains("Age = 50, FamilyName = Yamamoto, GivenName = Tasuke").Is(true);
+                return;
+            }
+            Assert.True(false);
+        }
     }
 }

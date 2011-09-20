@@ -315,6 +315,47 @@ namespace ChainingAssertion
             (d.DictGen<int, string, double>(dict, 1.9) as string).Is("dict");
         }
 
+        private class Person
+        {
+            public int Age { get; set; }
+            public string FamilyName { get; set; }
+            public string GivenName { get; set; }
+        }
+
+        [TestMethod]
+        public void DumpTest()
+        {
+            var count = new List<int>() { 1, 2, 3 };
+            var person = new Person { Age = 50, FamilyName = "Yamamoto", GivenName = "Tasuke" };
+            try
+            {
+                person.Is(p => p.Age < count.Count && p.FamilyName == "Yamada" && p.GivenName == "Tarou");
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Contains("Age = 50, FamilyName = Yamamoto, GivenName = Tasuke").Is(true);
+                return;
+            }
+            Assert.Fail();
+        }
+
+        void ContractRequires(string s)
+        {
+            System.Diagnostics.Contracts.Contract.Requires(s != null);
+        }
+
+        [TestMethod]
+        public void ThrowsContractException()
+        {
+            AssertEx.ThrowsContractException(() => ContractRequires(null));
+
+            AssertEx.Throws<AssertFailedException>(() =>
+                AssertEx.ThrowsContractException(() => ContractRequires("a")));
+
+            AssertEx.Throws<AssertFailedException>(()=>
+                AssertEx.ThrowsContractException(()=>{ throw new Exception();}));
+        }
+
         // testcase
 
         [TestMethod]

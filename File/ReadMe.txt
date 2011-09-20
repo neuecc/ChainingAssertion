@@ -110,8 +110,10 @@ mock.PrivateProperty = "mogumogu";
 // Exception Test(alternative of ExpectedExceptionAttribute)
 // AssertEx.Throws does not allow derived type
 // AssertEx.Catch allows derived type
+// AssertEx.ThrowsContractException catch only Code Contract's ContractException
 AssertEx.Throws<ArgumentNullException>(() => "foo".StartsWith(null));
 AssertEx.Catch<Exception>(() => "foo".StartsWith(null));
+AssertEx.ThrowsContractException(() => // contract method //);
 
 // return value is occured exception
 var ex = AssertEx.Throws<InvalidOperationException>(() =>

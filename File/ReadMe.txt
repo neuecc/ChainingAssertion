@@ -13,6 +13,9 @@ ChainingAssertion.MSTest.cs - MSTest
 ChainingAssertion.NUnit.cs - NUnit
 ChainingAssertion.MbUnit.cs - MbUnit(Gallio)
 ChainingAssertion.xUnit.cs - xUnit.net
+ChainingAssertion.SL.cs - Silverlight Unit Test Framework
+ChainingAssertion.WP7.cs - Silverlight Unit Test Framework/WP7
+(Silverlight Unit Test Framework - http://archive.msdn.microsoft.com/silverlightut)
 
 following tutorial is for MSTest.
 other version, see .cs's header.

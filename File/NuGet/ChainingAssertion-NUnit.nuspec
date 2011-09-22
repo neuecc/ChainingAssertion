@@ -14,6 +14,6 @@
         <tags>test unittest NUnit</tags>
     </metadata>
     <files>
-        <file src="../../ChainingAssertion.NUnit/ChainingAssertion.NUnit.cs" target="Content\" />
+        <file src="..\..\ChainingAssertion.NUnit\ChainingAssertion.NUnit.cs" target="Content\" />
     </files>
 </package>

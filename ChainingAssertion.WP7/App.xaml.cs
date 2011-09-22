@@ -63,6 +63,7 @@ namespace ChainingAssertion.WP7
         // このコードは、アプリケーションが再アクティブ化済みの場合には実行されません
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
+            
         }
 
         // アプリケーションがアクティブになった (前面に表示された) ときに実行されるコード

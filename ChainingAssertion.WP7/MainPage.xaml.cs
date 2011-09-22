@@ -21,7 +21,9 @@ namespace ChainingAssertion.WP7
         {
             InitializeComponent();
 
-            var testPage = UnitTestSystem.CreateTestPage() as IMobileTestPage;
+            UnitTestSettings settings = UnitTestSystem.CreateDefaultSettings();
+            settings.StartRunImmediately = true;
+            var testPage = UnitTestSystem.CreateTestPage(settings) as IMobileTestPage;
             this.BackKeyPress += (x, xe) => xe.Cancel = testPage.NavigateBack();
             this.Content = testPage as UIElement;
         }

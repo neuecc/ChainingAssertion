@@ -1,4 +1,6 @@
-nuget p chainingassertion.nuspec
-nuget p chainingassertion-mbunit.nuspec
-nuget p chainingassertion-nunit.nuspec
-nuget p chainingassertion-xunit.nuspec
+nuget pack chainingassertion.nuspec
+nuget pack chainingassertion-mbunit.nuspec
+nuget pack chainingassertion-nunit.nuspec
+nuget pack chainingassertion-xunit.nuspec
+nuget pack chainingassertion-sl.nuspec
+nuget pack chainingassertion-wp7.nuspec

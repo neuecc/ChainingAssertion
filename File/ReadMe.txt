@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.6.0.0 (Sep. 20th, 2011)
+ * ver 1.6.0.1 (Sep. 22th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -171,6 +171,11 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2011-09-22 ver 1.6.0.1
+    Add New File
+        ChainingAssertion.SL
+        ChainingAssertion.WP7
+
 2011-09-20 ver 1.6.0.0
     Add Method
         AssertEx.ThrowsContractException(for MSTest)

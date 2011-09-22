@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for Windows Phone 7
- * ver 1.6.0.1 (Sep. 20th, 2011)
+ * ver 1.6.0.1 (Sep. 22th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -90,10 +90,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {

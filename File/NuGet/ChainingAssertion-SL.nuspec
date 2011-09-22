@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>ChainingAssertion</id>
-        <version>1.6.0.0</version>
-        <title>Chaining Assertion for MSTest</title>
+        <id>ChainingAssertion-SL</id>
+        <version>1.6.0.1</version>
+        <title>Chaining Assertion for Silverlight</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Method Chaining base UnitTesting Extension Methods and Dynamic Private Accessor for MSTest. This provides only single .cs file.</description>
+        <description>Method Chaining base UnitTesting Extension Methods for Silverlight Unit Test Framework. This provides only single .cs file.</description>
         <language>en-US</language>
         <licenseUrl>http://chainingassertion.codeplex.com/license</licenseUrl>
         <projectUrl>http://chainingassertion.codeplex.com/</projectUrl>
-        <tags>test unittest mstest</tags>
+        <tags>test unittest silverlight</tags>
     </metadata>
     <files>
-        <file src="..\..\ChainingAssertion\ChainingAssertion.MSTest.cs" target="Content\" />
+        <file src="..\..\ChainingAssertion.SL\ChainingAssertion.SL.cs" target="Content\" />
     </files>
 </package>

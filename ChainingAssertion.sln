@@ -24,6 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{35C4E14F
 		File\NuGet\ChainingAssertion.nuspec = File\NuGet\ChainingAssertion.nuspec
 		File\NuGet\NuGet.exe = File\NuGet\NuGet.exe
 		File\NuGet\package.bat = File\NuGet\package.bat
+		File\NuGet\push.bat = File\NuGet\push.bat
 		File\zippack.fsx = File\zippack.fsx
 	EndProjectSection
 EndProject

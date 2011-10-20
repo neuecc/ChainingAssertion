@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for xUnit
- * ver 1.6.0.0 (Sep. 20th, 2011)
+ * ver 1.6.0.2 (Oct. 20th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -528,7 +528,7 @@ namespace Xunit
                 this.Members = new Dictionary<string, object>();
             }
 
-            protected override Expression VisitMember(MemberExpression node)
+            protected override System.Linq.Expressions.Expression VisitMember(MemberExpression node)
             {
                 if (node.Expression == param && !Members.ContainsKey(node.Member.Name))
                 {

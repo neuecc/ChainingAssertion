@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for MSTest
- * ver 1.6.0.2 (Oct. 20th, 2011)
+ * ver 1.6.1.0 (Oct. 24th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -280,15 +280,15 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         }
 
         /// <summary>Assert.IsNull</summary>
-        public static void IsNull<T>(this T value)
+        public static void IsNull<T>(this T value, string message = "")
         {
-            Assert.IsNull(value);
+            Assert.IsNull(value, message);
         }
 
         /// <summary>Assert.IsNotNull</summary>
-        public static void IsNotNull<T>(this T value)
+        public static void IsNotNull<T>(this T value, string message = "")
         {
-            Assert.IsNotNull(value);
+            Assert.IsNotNull(value, message);
         }
 
         /// <summary>Assert.AreSame</summary>

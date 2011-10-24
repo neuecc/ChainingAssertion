@@ -316,5 +316,21 @@ namespace ChainingAssertion
             }
             Assert.Fail();
         }
+
+        [Test]
+        public void IsNullMethodMessage()
+        {
+            object o = new object();
+            o.IsNotNull();
+            Assert.Throws<Gallio.Framework.Assertions.AssertionFailureException>(
+                () => o.IsNull("msg_msg"))
+            .Message.Contains("msg_msg").Is(true);
+
+            o = null;
+            o.IsNull();
+            Assert.Throws<Gallio.Framework.Assertions.AssertionFailureException>(
+                () => o.IsNotNull("msg_msg"))
+            .Message.Contains("msg_msg").Is(true);
+        }
     }
 }

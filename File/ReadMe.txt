@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.6.0.2 (Oct. 20th, 2011)
+ * ver 1.6.1.0 (Oct. 24th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -174,6 +174,10 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2011-10-24 ver 1.6.1.0
+    Changed
+        IsNull/IsNotNull Add message overload
+
 2011-10-20 ver 1.6.0.2
     Changed
         Avoid namespace/classname conflict "Expression"

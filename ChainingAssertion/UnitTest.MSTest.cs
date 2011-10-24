@@ -352,8 +352,8 @@ namespace ChainingAssertion
             AssertEx.Throws<AssertFailedException>(() =>
                 AssertEx.ThrowsContractException(() => ContractRequires("a")));
 
-            AssertEx.Throws<AssertFailedException>(()=>
-                AssertEx.ThrowsContractException(()=>{ throw new Exception();}));
+            AssertEx.Throws<AssertFailedException>(() =>
+                AssertEx.ThrowsContractException(() => { throw new Exception(); }));
         }
 
         // testcase
@@ -454,6 +454,22 @@ namespace ChainingAssertion
                 throw new ArgumentNullException("nullnull");
             });
             ex.ParamName.Is("nullnull");
+        }
+
+        [TestMethod]
+        public void IsNullMethodMessage()
+        {
+            object o = new object();
+            o.IsNotNull();
+            AssertEx.Throws<AssertFailedException>(
+                () => o.IsNull("msg_msg"))
+            .Message.Contains("msg_msg").Is(true);
+
+            o = null;
+            o.IsNull();
+            AssertEx.Throws<AssertFailedException>(
+                () => o.IsNotNull("msg_msg"))
+            .Message.Contains("msg_msg").Is(true);
         }
     }
 }

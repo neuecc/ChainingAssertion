@@ -199,5 +199,21 @@ namespace ChainingAssertion
                 throw new ArgumentNullException("nullnull");
             });
         }
+
+        [TestMethod]
+        public void IsNullMethodMessage()
+        {
+            object o = new object();
+            o.IsNotNull();
+            AssertEx.Throws<AssertFailedException>(
+                () => o.IsNull("msg_msg"))
+            .Message.Contains("msg_msg").Is(true);
+
+            o = null;
+            o.IsNull();
+            AssertEx.Throws<AssertFailedException>(
+                () => o.IsNotNull("msg_msg"))
+            .Message.Contains("msg_msg").Is(true);
+        }
     }
 }

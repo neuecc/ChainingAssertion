@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion for xUnit
- * ver 1.6.0.2 (Oct. 20th, 2011)
+ * ver 1.6.1.0 (Oct. 24th, 2011)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)

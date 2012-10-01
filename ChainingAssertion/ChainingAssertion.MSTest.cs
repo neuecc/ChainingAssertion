@@ -304,9 +304,10 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         }
 
         /// <summary>Assert.IsInstanceOfType</summary>
-        public static void IsInstanceOf<TExpected>(this object value, string message = "")
+        public static TExpected IsInstanceOf<TExpected>(this object value, string message = "")
         {
             Assert.IsInstanceOfType(value, typeof(TExpected), message);
+            return (TExpected)value;
         }
 
         /// <summary>Assert.IsNotInstanceOfType</summary>

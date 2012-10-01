@@ -62,7 +62,10 @@ namespace ChainingAssertion
             tuple.IsNotSameReferenceAs(Tuple.Create("foo")); // Assert.AreNotSame
 
             // Type Assertion
-            "foobar".IsInstanceOf<string>(); // Assert.IsInstanceOfType
+            var foobar = default(object);
+            foobar = "foobar";
+            foobar.IsInstanceOf<string>() // Assert.IsInstanceOfType
+                .ToUpper().Is("FOOBAR");            // ...returns the instance as TExpected.
             (999).IsNotInstanceOf<double>(); // Assert.IsNotInstanceOfType
         }
 

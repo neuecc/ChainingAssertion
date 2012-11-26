@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace ChainingAssertion
 {
@@ -347,7 +346,8 @@ namespace ChainingAssertion
             System.Diagnostics.Contracts.Contract.Requires(s != null);
         }
 
-        [TestMethod]
+        // for CodeContracts...
+        // [TestMethod]
         public void ThrowsContractException()
         {
             AssertEx.ThrowsContractException(() => ContractRequires(null));
@@ -473,6 +473,54 @@ namespace ChainingAssertion
             AssertEx.Throws<AssertFailedException>(
                 () => o.IsNotNull("msg_msg"))
             .Message.Contains("msg_msg").Is(true);
+        }
+
+        public class StructuralEqualTestClass
+        {
+            public int IntPro { get; set; }
+            public string StrProp { get; set; }
+            public int IntField;
+            public string StrField;
+        }
+
+        public class DummyStructural : IEquatable<DummyStructural>
+        {
+            public string MyProperty { get; set; }
+
+            public bool Equals(DummyStructural other)
+            {
+                return true;
+            }
+        }
+
+        [TestMethod]
+        public void StructuralEqualSuccess()
+        {
+            // primitive
+            "hoge".IsStructuralEqual("hoge");
+            (100).IsStructuralEqual(100);
+            new[] { 1, 2, 3 }.IsStructuralEqual(new[] { 1, 2, 3 });
+            new { Hoge = "aiueo", Huga = 100, Tako = new { k = 10 } }.IsStructuralEqual(new { Hoge = "aiueo", Huga = 100, Tako = new { k = 10 } });
+            new DummyStructural() { MyProperty = "aiueo" }.IsStructuralEqual(new DummyStructural() { MyProperty = "kakikukeko" });
+        }
+
+        [TestMethod]
+        public void StructuralEqualFailed()
+        {
+            // primitive
+            AssertEx.Throws<AssertFailedException>(() => "hoge".IsStructuralEqual("hage"))
+                .Message.Contains("actual = hoge expected = hage").Is(true);
+            AssertEx.Throws<AssertFailedException>(() => (100).IsStructuralEqual(101))
+                .Message.Contains("actual = 100 expected = 101").Is(true);
+
+            AssertEx.Throws<AssertFailedException>(() => new[] { 1, 2, 3 }.IsStructuralEqual(new[] { 1, 2 }))
+                .Message.Contains("actual = 3 expected = ").Is(true);
+
+            AssertEx.Throws<AssertFailedException>(() => new[] { 1, 2, 3 }.IsStructuralEqual(new[] { 1, 2, 4 }))
+                .Message.Contains("actual = 3 expected = 4").Is(true);
+
+            AssertEx.Throws<AssertFailedException>(() => new[] { 1, 2, 3 }.IsStructuralEqual(new[] { 1, 2, 3, 4 }))
+                .Message.Contains("actual =  expected = 4").Is(true);
         }
     }
 }

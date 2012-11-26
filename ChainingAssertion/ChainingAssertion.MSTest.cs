@@ -168,11 +168,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Diagnostics.Contracts;
 
 namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
@@ -440,6 +440,188 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                 throw new ArgumentException(string.Format("\"{0}\" not found : Type <{1}>", name, typeof(T).Name));
             }
         }
+
+        #region StructuralEqual
+
+        public static void IsStructuralEqual(this object actual, object expected, string message = "")
+        {
+            message = (string.IsNullOrEmpty(message) ? "" : ", " + message);
+            if (object.ReferenceEquals(actual, expected)) return;
+
+            if (actual == null) throw new AssertFailedException("actual is null" + message);
+            if (expected == null) throw new AssertFailedException("actual is not null" + message);
+            if (actual.GetType() != expected.GetType())
+            {
+                var msg = string.Format("expected type is {0} but actual type is {1}{2}",
+                    expected.GetType().Name, actual.GetType().Name, message);
+                throw new AssertFailedException(msg);
+            }
+
+            var r = StructuralEqual(actual, expected, new[] { actual.GetType().Name }); // root type
+            if (!r.IsEquals)
+            {
+                var msg = string.Format("is not structural equal, failed at {0}, actual = {1} expected = {2}{3}",
+                    string.Join(".", r.Names), r.Left, r.Right, message);
+                throw new AssertFailedException(msg);
+            }
+        }
+
+        public static void IsNotStructuralEqual(this object actual, object expected, string message = "")
+        {
+            message = (string.IsNullOrEmpty(message) ? "" : ", " + message);
+            if (object.ReferenceEquals(actual, expected)) throw new AssertFailedException("actual is same reference" + message); ;
+
+            if (actual == null) return;
+            if (expected == null) return;
+            if (actual.GetType() != expected.GetType())
+            {
+                return;
+            }
+
+            var r = StructuralEqual(actual, expected, new[] { actual.GetType().Name }); // root type
+            if (r.IsEquals)
+            {
+                throw new AssertFailedException("is structural equal" + message);
+            }
+        }
+
+        static EqualInfo TypeEqual(object left, object right, IEnumerable<string> names)
+        {
+            if (object.ReferenceEquals(left, right)) return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
+            if (left == null || right == null) return new EqualInfo { IsEquals = false, Left = left, Right = right, Names = names };
+            var lType = left.GetType();
+            var rType = right.GetType();
+            if (lType != rType) return new EqualInfo { IsEquals = false, Left = left, Right = right, Names = names };
+
+            return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
+        }
+
+        static EqualInfo SequenceEqual(IEnumerable leftEnumerable, IEnumerable rightEnumarable, IEnumerable<string> names)
+        {
+            var le = leftEnumerable.GetEnumerator();
+            using (le as IDisposable)
+            {
+                var re = rightEnumarable.GetEnumerator();
+
+                using (re as IDisposable)
+                {
+                    var index = 0;
+                    while (true)
+                    {
+                        object lValue = null;
+                        object rValue = null;
+                        var lMove = le.MoveNext();
+                        var rMove = re.MoveNext();
+                        if (lMove) lValue = le.Current;
+                        if (rMove) rValue = re.Current;
+
+                        if (lMove && rMove)
+                        {
+                            var result = StructuralEqual(lValue, rValue, names.Concat(new[] { "[" + index + "]" }));
+                            if (!result.IsEquals)
+                            {
+                                return result;
+                            }
+                        }
+
+                        if ((lMove == true && rMove == false) || (lMove == false && rMove == true))
+                        {
+                            return new EqualInfo { IsEquals = false, Left = lValue, Right = rValue, Names = names.Concat(new[] { "[" + index + "]" }) };
+                        }
+                        if (lMove == false && rMove == false) break;
+                        index++;
+                    }
+                }
+            }
+            return new EqualInfo { IsEquals = true, Left = leftEnumerable, Right = rightEnumarable, Names = names };
+        }
+
+        static EqualInfo StructuralEqual(object left, object right, IEnumerable<string> names)
+        {
+            var typeEqual = TypeEqual(left, right, names);
+            if (!typeEqual.IsEquals) return typeEqual;
+
+            // is string
+            if (left.GetType() == typeof(String))
+            {
+                return new EqualInfo { IsEquals = left.Equals(right), Left = left, Right = right, Names = names };
+            }
+
+            // is sequence
+            if (typeof(IEnumerable).IsAssignableFrom(left.GetType()))
+            {
+                return SequenceEqual((IEnumerable)left, (IEnumerable)right, names);
+            }
+
+            // IEquatable<T>
+            var equatable = typeof(IEquatable<>).MakeGenericType(left.GetType());
+            if (equatable.IsAssignableFrom(left.GetType()))
+            {
+                var result = (bool)equatable.GetMethod("Equals").Invoke(left, new[] { right });
+                return new EqualInfo { IsEquals = result, Left = left, Right = right, Names = names };
+            }
+
+            var fields = left.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
+            var properties = left.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var members = fields.Cast<MemberInfo>().Concat(properties);
+            if (!members.Any())
+            {
+                return new EqualInfo { IsEquals = left.Equals(right), Left = left, Right = right, Names = names };
+            }
+
+            foreach (dynamic mi in fields.Cast<MemberInfo>().Concat(properties))
+            {
+                var concatNames = names.Concat(new[] { (string)mi.Name });
+
+                object lv = mi.GetValue(left);
+                object rv = mi.GetValue(right);
+
+                if (object.ReferenceEquals(lv, rv)) continue;
+                var typeEqual2 = TypeEqual(lv, rv, concatNames);
+                if (!typeEqual2.IsEquals) return typeEqual2;
+
+                var lType = lv.GetType();
+
+                // IEquatable<T>
+                var equatable2 = typeof(IEquatable<>).MakeGenericType(lType);
+                if (equatable2.IsAssignableFrom(lType))
+                {
+                    var result = (bool)equatable2.GetMethod("Equals").Invoke(lv, new[] { rv });
+                    if (!result) return new EqualInfo { IsEquals = false, Left = lv, Right = rv, Names = concatNames };
+                    else continue;
+                }
+
+                // IEnumerable
+                if (typeof(IEnumerable).IsAssignableFrom(lType))
+                {
+                    var result = SequenceEqual((IEnumerable)lv, (IEnumerable)rv, concatNames);
+                    if (!result.IsEquals) return result;
+                    continue;
+                }
+
+                if (Type.GetTypeCode(lType) != TypeCode.Object)
+                {
+                    if (!lv.Equals(rv)) return new EqualInfo { IsEquals = false, Left = lv, Right = rv, Names = concatNames };
+                }
+                else
+                {
+                    var result = StructuralEqual(lv, rv, concatNames);
+                    if (!result.IsEquals) return result;
+                }
+            }
+
+            return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
+        }
+
+        private class EqualInfo
+        {
+            public object Left;
+            public object Right;
+            public bool IsEquals;
+            public IEnumerable<string> Names;
+        }
+
+        #endregion
 
         #region DynamicAccessor
 

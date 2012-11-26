@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion", "ChainingAssertion\ChainingAssertion.csproj", "{1B7277C5-58BB-4E42-BB8D-72DD12DCD28E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.xUnit", "ChainingAssertion.xUnit\ChainingAssertion.xUnit.csproj", "{1349E9DA-1B25-40D4-88DA-64923461765A}"

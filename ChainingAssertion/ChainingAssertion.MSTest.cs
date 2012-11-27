@@ -556,11 +556,11 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                 return new EqualInfo { IsEquals = result, Left = left, Right = right, Names = names };
             }
 
+            // is object
             var fields = left.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
-            var properties = left.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var properties = left.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetGetMethod(false) != null);
             var members = fields.Cast<MemberInfo>().Concat(properties);
 
-            // is object
             foreach (dynamic mi in fields.Cast<MemberInfo>().Concat(properties))
             {
                 var concatNames = names.Concat(new[] { (string)mi.Name });
@@ -574,7 +574,6 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                 }
             }
 
-            // empty object
             return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
         }
 

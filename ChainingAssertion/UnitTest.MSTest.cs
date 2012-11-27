@@ -481,6 +481,14 @@ namespace ChainingAssertion
             public string StrProp { get; set; }
             public int IntField;
             public string StrField;
+            public int SetOnlyProp { private get; set; }
+
+            static Random rand = new Random();
+
+            public StructuralEqualTestClass()
+            {
+                SetOnlyProp = rand.Next();
+            }
         }
 
         public class DummyStructural : IEquatable<DummyStructural>
@@ -502,6 +510,9 @@ namespace ChainingAssertion
             new[] { 1, 2, 3 }.IsStructuralEqual(new[] { 1, 2, 3 });
             new { Hoge = "aiueo", Huga = 100, Tako = new { k = 10 } }.IsStructuralEqual(new { Hoge = "aiueo", Huga = 100, Tako = new { k = 10 } });
             new DummyStructural() { MyProperty = "aiueo" }.IsStructuralEqual(new DummyStructural() { MyProperty = "kakikukeko" });
+
+            new StructuralEqualTestClass { IntPro = 1, IntField = 10, StrField = "hoge", StrProp = "huga" }
+                .IsStructuralEqual(new StructuralEqualTestClass { IntPro = 1, IntField = 10, StrField = "hoge", StrProp = "huga" });
         }
 
         [TestMethod]

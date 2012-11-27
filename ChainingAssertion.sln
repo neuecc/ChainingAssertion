@@ -28,10 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{35C4E14F
 		File\zippack.fsx = File\zippack.fsx
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.SL", "ChainingAssertion.SL\ChainingAssertion.SL.csproj", "{1041A21C-E310-4391-9459-C5998CBB6BAB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.WP7", "ChainingAssertion.WP7\ChainingAssertion.WP7.csproj", "{E73F54B1-780B-4D4A-A313-D09B011EE189}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,16 +50,6 @@ Global
 		{C63A6CEB-3673-4113-96BF-0DD22A6075BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C63A6CEB-3673-4113-96BF-0DD22A6075BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C63A6CEB-3673-4113-96BF-0DD22A6075BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1041A21C-E310-4391-9459-C5998CBB6BAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1041A21C-E310-4391-9459-C5998CBB6BAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1041A21C-E310-4391-9459-C5998CBB6BAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1041A21C-E310-4391-9459-C5998CBB6BAB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E73F54B1-780B-4D4A-A313-D09B011EE189}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E73F54B1-780B-4D4A-A313-D09B011EE189}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E73F54B1-780B-4D4A-A313-D09B011EE189}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{E73F54B1-780B-4D4A-A313-D09B011EE189}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E73F54B1-780B-4D4A-A313-D09B011EE189}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E73F54B1-780B-4D4A-A313-D09B011EE189}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

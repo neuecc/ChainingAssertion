@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.6.1.0 (Oct. 24th, 2011)
+ * ver 1.7.0.0 (Nov. 28th, 2012)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -13,9 +13,6 @@ ChainingAssertion.MSTest.cs - MSTest
 ChainingAssertion.NUnit.cs - NUnit
 ChainingAssertion.MbUnit.cs - MbUnit(Gallio)
 ChainingAssertion.xUnit.cs - xUnit.net
-ChainingAssertion.SL.cs - Silverlight Unit Test Framework
-ChainingAssertion.WP7.cs - Silverlight Unit Test Framework/WP7
-(Silverlight Unit Test Framework - http://archive.msdn.microsoft.com/silverlightut)
 
 following tutorial is for MSTest.
 other version, see .cs's header.
@@ -174,6 +171,17 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2012-11-28 ver 1.7.0.0
+    Add Method
+        IsTrue
+        IsFalse
+        IsStructuralEqual
+        IsNotStructuralEqual
+    Changed
+        IsInstanceOf returns actual
+    Delete
+        Silverlight, Windows Phone 7 support
+
 2011-10-24 ver 1.6.1.0
     Changed
         IsNull/IsNotNull Add message overload

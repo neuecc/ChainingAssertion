@@ -485,17 +485,6 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             }
         }
 
-        static EqualInfo TypeEqual(object left, object right, IEnumerable<string> names)
-        {
-            if (object.ReferenceEquals(left, right)) return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
-            if (left == null || right == null) return new EqualInfo { IsEquals = false, Left = left, Right = right, Names = names };
-            var lType = left.GetType();
-            var rType = right.GetType();
-            if (lType != rType) return new EqualInfo { IsEquals = false, Left = left, Right = right, Names = names };
-
-            return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
-        }
-
         static EqualInfo SequenceEqual(IEnumerable leftEnumerable, IEnumerable rightEnumarable, IEnumerable<string> names)
         {
             var le = leftEnumerable.GetEnumerator();
@@ -538,24 +527,30 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 
         static EqualInfo StructuralEqual(object left, object right, IEnumerable<string> names)
         {
-            var typeEqual = TypeEqual(left, right, names);
-            if (!typeEqual.IsEquals) return typeEqual;
+            // type and basic checks
+            if (object.ReferenceEquals(left, right)) return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
+            if (left == null || right == null) return new EqualInfo { IsEquals = false, Left = left, Right = right, Names = names };
+            var lType = left.GetType();
+            var rType = right.GetType();
+            if (lType != rType) return new EqualInfo { IsEquals = false, Left = left, Right = right, Names = names };
 
-            // is string
-            if (left.GetType() == typeof(String))
+            var type = left.GetType();
+
+            // not object(int, string, etc...)
+            if (Type.GetTypeCode(type) != TypeCode.Object)
             {
                 return new EqualInfo { IsEquals = left.Equals(right), Left = left, Right = right, Names = names };
             }
 
             // is sequence
-            if (typeof(IEnumerable).IsAssignableFrom(left.GetType()))
+            if (typeof(IEnumerable).IsAssignableFrom(type))
             {
                 return SequenceEqual((IEnumerable)left, (IEnumerable)right, names);
             }
 
             // IEquatable<T>
-            var equatable = typeof(IEquatable<>).MakeGenericType(left.GetType());
-            if (equatable.IsAssignableFrom(left.GetType()))
+            var equatable = typeof(IEquatable<>).MakeGenericType(type);
+            if (equatable.IsAssignableFrom(type))
             {
                 var result = (bool)equatable.GetMethod("Equals").Invoke(left, new[] { right });
                 return new EqualInfo { IsEquals = result, Left = left, Right = right, Names = names };
@@ -564,52 +559,22 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             var fields = left.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
             var properties = left.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
             var members = fields.Cast<MemberInfo>().Concat(properties);
-            if (!members.Any())
-            {
-                return new EqualInfo { IsEquals = left.Equals(right), Left = left, Right = right, Names = names };
-            }
 
+            // is object
             foreach (dynamic mi in fields.Cast<MemberInfo>().Concat(properties))
             {
                 var concatNames = names.Concat(new[] { (string)mi.Name });
 
                 object lv = mi.GetValue(left);
                 object rv = mi.GetValue(right);
-
-                if (object.ReferenceEquals(lv, rv)) continue;
-                var typeEqual2 = TypeEqual(lv, rv, concatNames);
-                if (!typeEqual2.IsEquals) return typeEqual2;
-
-                var lType = lv.GetType();
-
-                // IEquatable<T>
-                var equatable2 = typeof(IEquatable<>).MakeGenericType(lType);
-                if (equatable2.IsAssignableFrom(lType))
+                var result = StructuralEqual(lv, rv, concatNames);
+                if (!result.IsEquals)
                 {
-                    var result = (bool)equatable2.GetMethod("Equals").Invoke(lv, new[] { rv });
-                    if (!result) return new EqualInfo { IsEquals = false, Left = lv, Right = rv, Names = concatNames };
-                    else continue;
-                }
-
-                // IEnumerable
-                if (typeof(IEnumerable).IsAssignableFrom(lType))
-                {
-                    var result = SequenceEqual((IEnumerable)lv, (IEnumerable)rv, concatNames);
-                    if (!result.IsEquals) return result;
-                    continue;
-                }
-
-                if (Type.GetTypeCode(lType) != TypeCode.Object)
-                {
-                    if (!lv.Equals(rv)) return new EqualInfo { IsEquals = false, Left = lv, Right = rv, Names = concatNames };
-                }
-                else
-                {
-                    var result = StructuralEqual(lv, rv, concatNames);
-                    if (!result.IsEquals) return result;
+                    return result;
                 }
             }
 
+            // empty object
             return new EqualInfo { IsEquals = true, Left = left, Right = right, Names = names };
         }
 

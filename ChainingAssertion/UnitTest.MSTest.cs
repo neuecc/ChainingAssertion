@@ -482,6 +482,8 @@ namespace ChainingAssertion
             public int IntField;
             public string StrField;
             public int SetOnlyProp { private get; set; }
+            public int[] IntArray { get; set; }
+            public Stru StruStru;
 
             static Random rand = new Random();
 
@@ -501,6 +503,23 @@ namespace ChainingAssertion
             }
         }
 
+        public class Stru
+        {
+            public int MyProperty { get; set; }
+            public string[] StrArray { get; set; }
+            public MMM MP2 { get; set; }
+        }
+
+        public class MMM
+        {
+            public int MyProperty { get; set; }
+        }
+
+        public class EmptyClass
+        {
+
+        }
+
         [TestMethod]
         public void StructuralEqualSuccess()
         {
@@ -508,16 +527,57 @@ namespace ChainingAssertion
             "hoge".IsStructuralEqual("hoge");
             (100).IsStructuralEqual(100);
             new[] { 1, 2, 3 }.IsStructuralEqual(new[] { 1, 2, 3 });
+
+            // complex
             new { Hoge = "aiueo", Huga = 100, Tako = new { k = 10 } }.IsStructuralEqual(new { Hoge = "aiueo", Huga = 100, Tako = new { k = 10 } });
             new DummyStructural() { MyProperty = "aiueo" }.IsStructuralEqual(new DummyStructural() { MyProperty = "kakikukeko" });
+            new EmptyClass().IsStructuralEqual(new EmptyClass());
 
-            new StructuralEqualTestClass { IntPro = 1, IntField = 10, StrField = "hoge", StrProp = "huga" }
-                .IsStructuralEqual(new StructuralEqualTestClass { IntPro = 1, IntField = 10, StrField = "hoge", StrProp = "huga" });
+            var s1 = new StructuralEqualTestClass
+            {
+                IntPro = 1,
+                IntField = 10,
+                StrField = "hoge",
+                StrProp = "huga",
+                IntArray = new[] { 1, 2, 3, 4, 5 },
+                StruStru = new Stru()
+                {
+                    MyProperty = 1000,
+                    StrArray = new[] { "hoge", "huga", "tako" },
+                    MP2 = new MMM() { MyProperty = 10000 }
+                }
+            };
+
+            var s2 = new StructuralEqualTestClass
+            {
+                IntPro = 1,
+                IntField = 10,
+                StrField = "hoge",
+                StrProp = "huga",
+                IntArray = new[] { 1, 2, 3, 4, 5 },
+                StruStru = new Stru()
+                {
+                    MyProperty = 1000,
+                    StrArray = new[] { "hoge", "huga", "tako" },
+                    MP2 = new MMM() { MyProperty = 10000 }
+                }
+            };
+
+            s1.IsStructuralEqual(s1);
+            s1.IsStructuralEqual(s2);
         }
 
         [TestMethod]
         public void StructuralEqualFailed()
         {
+            // type
+            object n = null;
+            AssertEx.Throws<AssertFailedException>(() => n.IsStructuralEqual("a"));
+            AssertEx.Throws<AssertFailedException>(() => "a".IsStructuralEqual(n));
+            int i = 10;
+            long l = 10;
+            AssertEx.Throws<AssertFailedException>(() => i.IsStructuralEqual(l));
+
             // primitive
             AssertEx.Throws<AssertFailedException>(() => "hoge".IsStructuralEqual("hage"))
                 .Message.Contains("actual = hoge expected = hage").Is(true);
@@ -532,6 +592,60 @@ namespace ChainingAssertion
 
             AssertEx.Throws<AssertFailedException>(() => new[] { 1, 2, 3 }.IsStructuralEqual(new[] { 1, 2, 3, 4 }))
                 .Message.Contains("actual =  expected = 4").Is(true);
+
+            AssertEx.Throws<AssertFailedException>(() => new { Hoge = "aiueo", Huga = 100, Tako = new { k = 10 } }.IsStructuralEqual(new { Hoge = "aiueo", Huga = 100, Tako = new { k = 12 } }))
+                .Message.Contains("actual = 10 expected = 12").Is(true);
+
+            var s1 = new StructuralEqualTestClass
+            {
+                IntPro = 1,
+                IntField = 10,
+                StrField = "hoge",
+                StrProp = "huga",
+                IntArray = new[] { 1, 2, 3, 4, 5 },
+                StruStru = new Stru()
+                {
+                    MyProperty = 1000,
+                    StrArray = new[] { "hoge", "huga", "tako" },
+                    MP2 = new MMM() { MyProperty = 10000 }
+                }
+            };
+
+            var s2 = new StructuralEqualTestClass
+            {
+                IntPro = 1,
+                IntField = 10,
+                StrField = "hoge",
+                StrProp = "huga",
+                IntArray = new[] { 1, 2, 3, 4, 5, 6 },
+                StruStru = new Stru()
+                {
+                    MyProperty = 1000,
+                    StrArray = new[] { "hoge", "huga", "tako" },
+                    MP2 = new MMM() { MyProperty = 10000 }
+                }
+            };
+
+            var s3 = new StructuralEqualTestClass
+            {
+                IntPro = 1,
+                IntField = 10,
+                StrField = "hoge",
+                StrProp = "huga",
+                IntArray = new[] { 1, 2, 3, 4, 5 },
+                StruStru = new Stru()
+                {
+                    MyProperty = 1000,
+                    StrArray = new[] { "hoge", "huga", "tako" },
+                    MP2 = new MMM() { MyProperty = 13000 }
+                }
+            };
+
+            AssertEx.Throws<AssertFailedException>(() => s1.IsStructuralEqual(s2))
+                .Message.Contains("StructuralEqualTestClass.IntArray.[5]").Is(true);
+
+            AssertEx.Throws<AssertFailedException>(() => s1.IsStructuralEqual(s3))
+                .Message.Contains("StructuralEqualTestClass.StruStru.MP2.MyProperty").Is(true);
         }
     }
 }

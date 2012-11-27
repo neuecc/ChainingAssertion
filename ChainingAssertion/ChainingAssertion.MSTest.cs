@@ -291,6 +291,18 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             Assert.IsNotNull(value, message);
         }
 
+        /// <summary>Is(true)</summary>
+        public static void IsTrue(this bool value, string message = "")
+        {
+            value.Is(true, message);
+        }
+
+        /// <summary>Is(false)</summary>
+        public static void IsFalse(this bool value, string message = "")
+        {
+            value.Is(false, message);
+        }
+
         /// <summary>Assert.AreSame</summary>
         public static void IsSameReferenceAs<T>(this T actual, T expected, string message = "")
         {
@@ -443,6 +455,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 
         #region StructuralEqual
 
+        /// <summary>Assert by deep recursive value equality compare</summary>
         public static void IsStructuralEqual(this object actual, object expected, string message = "")
         {
             message = (string.IsNullOrEmpty(message) ? "" : ", " + message);
@@ -466,6 +479,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
             }
         }
 
+        /// <summary>Assert by deep recursive value equality compare</summary>
         public static void IsNotStructuralEqual(this object actual, object expected, string message = "")
         {
             message = (string.IsNullOrEmpty(message) ? "" : ", " + message);

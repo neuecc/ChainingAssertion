@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.7.0.0 (Nov. 28th, 2012)
+ * ver 1.7.0.1 (Nov. 28th, 2012)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -33,8 +33,8 @@ Enumerable.Range(1, 5).Is(1, 2, 3, 4, 5);
 
 var array = new[] { 1, 3, 7, 8 };
 array.Count().Is(4);
-array.Contains(8).Is(true);
-array.All(i => i < 5).Is(false);
+array.Contains(8).IsTrue(); // IsTrue() == Is(true)
+array.All(i => i < 5).IsFalse(); // IsFalse() == Is(false)
 array.Any().Is(true);
 new int[] { }.Any().Is(false);   // IsEmpty
 array.OrderBy(x => x).Is(array); // IsOrdered
@@ -70,6 +70,22 @@ lower.Is(upper, (x, y) => x.ToUpper() == y.ToUpper());
 
 // or you can use Linq to Objects - SequenceEqual
 lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+
+| StructuralEqual
+
+class MyClass
+{
+    public int IntProp { get; set; }
+    public string StrField;
+}
+
+var mc1 = new MyClass() { IntProp = 10, StrField = "foo" };
+var mc2 = new MyClass() { IntProp = 10, StrField = "foo" };
+
+mc1.IsStructuralEqual(mc2); // deep recursive value equality compare
+
+mc1.IntProp = 20;
+mc1.IsNotStructuralEqual(mc2);
 
 | DynamicAccessor
 
@@ -171,7 +187,7 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
-2012-11-28 ver 1.7.0.0
+2012-11-28 ver 1.7.0.1
     Add Method
         IsTrue
         IsFalse

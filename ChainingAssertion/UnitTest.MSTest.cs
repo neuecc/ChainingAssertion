@@ -36,8 +36,8 @@ namespace ChainingAssertion
 
             var array = new[] { 1, 3, 7, 8 };
             array.Count().Is(4);
-            array.Contains(8).Is(true);
-            array.All(i => i < 5).Is(false);
+            array.Contains(8).IsTrue(); // IsTrue() == Is(true)
+            array.All(i => i < 5).IsFalse(); // IsFalse() == Is(false)
             array.Any().Is(true);
             new int[] { }.Any().Is(false);   // IsEmpty
             array.OrderBy(x => x).Is(array); // IsOrdered
@@ -80,6 +80,24 @@ namespace ChainingAssertion
 
             // or you can use Linq to Objects - SequenceEqual
             lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+        }
+
+        class MyClass
+        {
+            public int IntProp { get; set; }
+            public string StrField;
+        }
+
+        [TestMethod]
+        public void StructuralEqualTest()
+        {
+            var mc1 = new MyClass() { IntProp = 10, StrField = "foo" };
+            var mc2 = new MyClass() { IntProp = 10, StrField = "foo" };
+
+            mc1.IsStructuralEqual(mc2); // deep recursive value equality compare
+
+            mc1.IntProp = 20;
+            mc1.IsNotStructuralEqual(mc2);
         }
 
         [TestMethod]

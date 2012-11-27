@@ -14,9 +14,7 @@ let files =
      "ChainingAssertion\ChainingAssertion.MSTest.cs";
      "ChainingAssertion.MbUnit\ChainingAssertion.MbUnit.cs";
      "ChainingAssertion.NUnit\ChainingAssertion.NUnit.cs";
-     "ChainingAssertion.xUnit\ChainingAssertion.xUnit.cs";
-     "ChainingAssertion.SL\ChainingAssertion.SL.cs";
-     "ChainingAssertion.WP7\ChainingAssertion.WP7.cs";]
+     "ChainingAssertion.xUnit\ChainingAssertion.xUnit.cs";]
     |> Seq.map pass
 
 // compress

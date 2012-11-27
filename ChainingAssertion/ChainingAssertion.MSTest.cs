@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
- * Chaining Assertion for MSTest
- * ver 1.6.1.0 (Oct. 24th, 2011)
+ * Chaining Assertion
+ * ver 1.7.0.1 (Nov. 28th, 2012)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -26,8 +26,8 @@
  * 
  * var array = new[] { 1, 3, 7, 8 };
  * array.Count().Is(4);
- * array.Contains(8).Is(true);
- * array.All(i => i < 5).Is(false);
+ * array.Contains(8).IsTrue(); // IsTrue() == Is(true)
+ * array.All(i => i < 5).IsFalse(); // IsFalse() == Is(false)
  * array.Any().Is(true);
  * new int[] { }.Any().Is(false);   // IsEmpty
  * array.OrderBy(x => x).Is(array); // IsOrdered
@@ -63,6 +63,22 @@
  *
  * // or you can use Linq to Objects - SequenceEqual
  * lower.SequenceEqual(upper, StringComparer.InvariantCultureIgnoreCase).Is(true);
+ * 
+ * | StructuralEqual
+ * 
+ * class MyClass
+ * {
+ *     public int IntProp { get; set; }
+ *     public string StrField;
+ * }
+ * 
+ * var mc1 = new MyClass() { IntProp = 10, StrField = "foo" };
+ * var mc2 = new MyClass() { IntProp = 10, StrField = "foo" };
+ * 
+ * mc1.IsStructuralEqual(mc2); // deep recursive value equality compare
+ * 
+ * mc1.IntProp = 20;
+ * mc1.IsNotStructuralEqual(mc2);
  * 
  * | DynamicAccessor
  * 

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ChainingAssertion-NUnit</id>
-        <version>1.7.0.2</version>
+        <version>1.7.1.0</version>
         <title>Chaining Assertion for NUnit</title>
         <authors>neuecc</authors>
         <owners>neuecc</owners>

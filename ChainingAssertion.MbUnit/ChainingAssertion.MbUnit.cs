@@ -131,6 +131,7 @@ namespace MbUnit.Framework
 {
     #region Extensions
 
+    [System.Diagnostics.DebuggerStepThroughAttribute]
     [ContractVerification(false)]
     public static partial class AssertEx
     {

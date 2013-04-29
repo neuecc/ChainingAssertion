@@ -194,6 +194,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
     #region Extensions
 
+    [System.Diagnostics.DebuggerStepThroughAttribute]
     [ContractVerification(false)]
     public static partial class AssertEx
     {

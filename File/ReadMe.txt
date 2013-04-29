@@ -1,6 +1,6 @@
 ﻿/*--------------------------------------------------------------------------
  * Chaining Assertion
- * ver 1.7.0.1 (Nov. 28th, 2012)
+ * ver 1.7.0.2 (Apr. 29th, 2013)
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
@@ -187,6 +187,9 @@ public static object[] toaruSource = new[]
 };
 
 -- History --
+2013-04-29 ver 1.7.0.2
+    Add DebuggerStepThroughtAttribute
+        pull request from mikehibm, thanks
 2012-11-28 ver 1.7.0.1
     Add Method
         IsTrue

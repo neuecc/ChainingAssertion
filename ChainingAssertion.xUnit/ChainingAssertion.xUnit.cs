@@ -357,13 +357,13 @@ namespace Xunit
             message = (string.IsNullOrEmpty(message) ? "" : ", " + message);
             if (object.ReferenceEquals(actual, expected)) return;
 
-            if (actual == null) throw new AssertException("actual is null" + message);
-            if (expected == null) throw new AssertException("actual is not null" + message);
+            if (actual == null) throw new ArgumentNullException(nameof(actual), $"{nameof(actual)} is null{message}");
+            if (expected == null) throw new ArgumentNullException(nameof(expected), $"{nameof(expected)} is null{message}");
             if (actual.GetType() != expected.GetType())
             {
                 var msg = string.Format("expected type is {0} but actual type is {1}{2}",
                     expected.GetType().Name, actual.GetType().Name, message);
-                throw new AssertException(msg);
+                throw new XunitException(msg);
             }
 
             var r = StructuralEqual(actual, expected, new[] { actual.GetType().Name }); // root type
@@ -371,7 +371,7 @@ namespace Xunit
             {
                 var msg = string.Format("is not structural equal, failed at {0}, actual = {1} expected = {2}{3}",
                     string.Join(".", r.Names), r.Left, r.Right, message);
-                throw new AssertException(msg);
+                throw new XunitException(msg);
             }
         }
 
@@ -379,7 +379,7 @@ namespace Xunit
         public static void IsNotStructuralEqual(this object actual, object expected, string message = "")
         {
             message = (string.IsNullOrEmpty(message) ? "" : ", " + message);
-            if (object.ReferenceEquals(actual, expected)) throw new AssertException("actual is same reference" + message); ;
+            if (object.ReferenceEquals(actual, expected)) throw new XunitException("actual is same reference" + message); ;
 
             if (actual == null) return;
             if (expected == null) return;
@@ -391,7 +391,7 @@ namespace Xunit
             var r = StructuralEqual(actual, expected, new[] { actual.GetType().Name }); // root type
             if (r.IsEquals)
             {
-                throw new AssertException("is structural equal" + message);
+                throw new XunitException("is structural equal" + message);
             }
         }
 

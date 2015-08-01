@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>ChainingAssertion-MbUnit.Bin</id>
+    <version>$version$</version>
+    <title>Chaining Assertion for MbUnit - Binary Edition</title>
+    <authors>neuecc</authors>
+    <owners>neuecc</owners>
+    <licenseUrl>https://github.com/neuecc/ChainingAssertion/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/neuecc/ChainingAssertion/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Method Chaining base UnitTesting Extension Methods and Dynamic Private Accessor for MbUnit.</description>
+    <language>en-US</language>
+    <tags>test unittest MbUnit</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System" targetFramework="" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework="" />
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

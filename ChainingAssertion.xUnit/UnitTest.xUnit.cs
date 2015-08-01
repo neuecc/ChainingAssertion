@@ -5,6 +5,7 @@ using Xunit;
 using Xunit.Extensions;
 using Xunit.Sdk;
 
+#if DEBUG
 namespace ChainingAssertion
 {
     public class UnitTest
@@ -635,3 +636,4 @@ namespace ChainingAssertion
         }
     }
 }
+#endif

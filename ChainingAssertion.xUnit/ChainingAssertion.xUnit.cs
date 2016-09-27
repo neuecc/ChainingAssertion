@@ -141,8 +141,8 @@ namespace Xunit
             if (typeof(T) != typeof(string) && typeof(IEnumerable).IsAssignableFrom(typeof(T)))
             {
                 Assert.Equal(
-                    ((IEnumerable)actual).Cast<object>().ToArray(),
-                    ((IEnumerable)expected).Cast<object>().ToArray());
+                    ((IEnumerable)expected).Cast<object>().ToArray(),
+                    ((IEnumerable)actual).Cast<object>().ToArray());
                 return;
             }
 

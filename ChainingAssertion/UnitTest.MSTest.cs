@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ChainingAssertion
 {
@@ -393,6 +394,31 @@ namespace ChainingAssertion
         }
 
         [TestMethod]
+        [TestCase(1, 2, 3)]
+        [TestCase(10, 20, 30)]
+        [TestCase(100, 200, 300)]
+        public async Task TestTestCaseAsync()
+        {
+            await TestContext.RunAsync(async (int x, int y, int z) =>
+            {
+                var actual1 = await SumAsync(x, y);
+                actual1.Is(z);
+
+                var actual2 = await SumAsync(x, y, z);
+                actual2.Is(i => i < 1000);
+            });
+        }
+
+        private Task<int> SumAsync(params int[] args)
+        {
+            return Task.Run(async () =>
+            {
+                await Task.Delay(200);
+                return args.Sum();
+            });
+        }
+
+        [TestMethod]
         [TestCaseSource("toaruSource")]
         public void TestTestCaseSource()
         {
@@ -400,6 +426,23 @@ namespace ChainingAssertion
             {
                 string.Concat(x, y).Is(z);
             });
+        }
+
+        [TestMethod]
+        [TestCaseSource("toaruSource")]
+        public async Task TestTestCaseSourceAsync()
+        {
+            await TestContext.RunAsync(async (int x, int y, string z) =>
+            {
+                var actual = await ConctAsync(x, y);
+                actual.Is(z);
+            });
+        }
+
+        private async Task<string> ConctAsync(params int[] args)
+        {
+            await Task.Delay(100);
+            return string.Concat(args);
         }
 
         public static object[] toaruSource = new[]

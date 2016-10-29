@@ -896,7 +896,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         }
     }
 
-    public static partial class TestContextExtensions
+    public static class TestContextExtensions
     {
         private static IEnumerable<object[]> GetParameters(Type classType, string methodName)
         {

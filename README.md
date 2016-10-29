@@ -231,3 +231,28 @@ public static object[] toaruSource = new[]
     new object[] {9, 4, "94"}
 };
 ```
+
+## Parameterized Test - Async version (for MSTest)
+
+There is also "RunAsync" extension method that is async version of "Run" extesion method.
+
+```csharp
+[TestClass]
+public class UnitTest
+{
+    public TestContext TestContext { get; set; }
+
+    [TestMethod]
+    [TestCase(1, 2, 3)]
+    [TestCase(10, 20, 30)]
+    [TestCase(100, 200, 300)]
+    public async Task TestTestCaseAsync()
+    {
+        await TestContext.RunAsync((int x, int y, int z) =>
+        {
+            var actual = await SumAsync(x, y);
+            actual.Is(z);
+        });
+    }
+}
+```

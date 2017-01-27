@@ -13,7 +13,6 @@ let files =
     ["File\ReadMe.txt";
      "ChainingAssertion\ChainingAssertion.MSTest.cs";
      "ChainingAssertion.MbUnit\ChainingAssertion.MbUnit.cs";
-     "ChainingAssertion.NUnit\ChainingAssertion.NUnit.cs";
      "ChainingAssertion.xUnit\ChainingAssertion.xUnit.cs";]
     |> Seq.map pass
 

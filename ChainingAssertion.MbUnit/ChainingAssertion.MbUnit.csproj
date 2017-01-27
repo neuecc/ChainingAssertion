@@ -44,6 +44,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\ChainingAssertion.MbUnit.XML</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Gallio, Version=3.4.0.0, Culture=neutral, PublicKeyToken=eb9cfa67ee6ab36e, processorArchitecture=MSIL">
@@ -71,10 +73,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Lib\Gallio.dll" />
-    <Content Include="Lib\Gallio.xml" />
-    <Content Include="Lib\MbUnit.dll" />
-    <Content Include="Lib\MbUnit.xml" />
+    <None Include="Lib\Gallio.dll" />
+    <None Include="Lib\Gallio.xml" />
+    <None Include="Lib\MbUnit.dll" />
+    <None Include="Lib\MbUnit.xml" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -98,7 +100,16 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ChainingAssertion-MbUnit.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if not "$(ConfigurationName)" == "Release" goto END
+pushd "$(ProjectDir)"
+"$(SolutionDir)File\NuGet\NuGet.exe" pack "$(ProjectFileName)" -Prop Configuration=Release;Platform=AnyCPU -o $(OutDir)
+:END</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+#if DEBUG
 namespace ChainingAssertion
 {
     [TestFixture]
@@ -644,3 +645,4 @@ namespace ChainingAssertion
         }
     }
 }
+#endif

@@ -19,6 +19,7 @@
         </frameworkAssemblies>
     </metadata>
     <files>
-        <file src="..\..\ChainingAssertion\ChainingAssertion.MSTest.cs" target="Content\" />
+      <file src="..\..\ChainingAssertion\dist\net40\ChainingAssertion.MSTest.cs" target="Content\net40" />
+      <file src="..\..\ChainingAssertion\dist\net45\ChainingAssertion.MSTest.cs" target="Content\net45" />
     </files>
 </package>

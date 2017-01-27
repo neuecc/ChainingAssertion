@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion", "ChainingAssertion\ChainingAssertion.csproj", "{1B7277C5-58BB-4E42-BB8D-72DD12DCD28E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.xUnit", "ChainingAssertion.xUnit\ChainingAssertion.xUnit.csproj", "{1349E9DA-1B25-40D4-88DA-64923461765A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.NUnit", "ChainingAssertion.NUnit\ChainingAssertion.NUnit.csproj", "{A92B00E2-4940-4323-A230-93F0D19E21E1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChainingAssertion.MbUnit", "ChainingAssertion.MbUnit\ChainingAssertion.MbUnit.csproj", "{C63A6CEB-3673-4113-96BF-0DD22A6075BA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "File", "File", "{B75A0492-D825-4AC4-9710-C455AB2B0102}"
 	ProjectSection(SolutionItems) = preProject
@@ -44,10 +44,6 @@ Global
 		{A92B00E2-4940-4323-A230-93F0D19E21E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A92B00E2-4940-4323-A230-93F0D19E21E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A92B00E2-4940-4323-A230-93F0D19E21E1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C63A6CEB-3673-4113-96BF-0DD22A6075BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C63A6CEB-3673-4113-96BF-0DD22A6075BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C63A6CEB-3673-4113-96BF-0DD22A6075BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C63A6CEB-3673-4113-96BF-0DD22A6075BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

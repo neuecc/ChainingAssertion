@@ -642,7 +642,7 @@ namespace Xunit
                         .SequenceEqual(parameterTypes, new EqualsComparer<Type>((x, y) =>
                             (x.IsGenericParameter)
                                 ? a.TypeParameters[x].IsAssignableFrom(y)
-                                : x.Equals(y)))
+                                : x == y))
                     )
                     .ToArray();
 

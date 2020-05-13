@@ -371,7 +371,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         {
             var exception = Catch<T>(testCode, message);
 
-            if (!typeof(T).Equals(exception.GetType()))
+            if (typeof(T) != exception.GetType())
             {
                 var headerMsg = "Failed Throws<" + typeof(T).Name + ">.";
                 var additionalMsg = string.IsNullOrEmpty(message) ? "" : ", " + message;
@@ -763,7 +763,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
                         .SequenceEqual(parameterTypes, new EqualsComparer<Type>((x, y) =>
                             (x.IsGenericParameter)
                                 ? a.TypeParameters[x].IsAssignableFrom(y)
-                                : x.Equals(y)))
+                                : x == y))
                     )
                     .ToArray();
 

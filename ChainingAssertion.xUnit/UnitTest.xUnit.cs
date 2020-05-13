@@ -184,7 +184,7 @@ namespace ChainingAssertion
             d[3] = 'A';
             (d.privateField as string).Is("AAA");
 
-            ((string)d[100.101]).Is("100.101");
+            ((string)d[100.101]).Is(100.101.ToString());
             d[72] = "Chihaya";
             (d.privateField as string).Is("Chihaya72");
 

@@ -52,7 +52,7 @@ namespace ChainingAssertion
 
             // Not Assertion
             "foobar".IsNot("fooooooo"); // Assert.NotEqual
-            new[] { "a", "z", "x" }.IsNot("a", "x", "z"); /// Assert.NotEqual
+            new[] { "a", "z", "x" }.IsNot("a", "x", "z"); // Assert.NotEqual
 
             // ReferenceEqual Assertion
             var tuple = Tuple.Create("foo");

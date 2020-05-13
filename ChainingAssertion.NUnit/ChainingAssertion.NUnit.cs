@@ -495,10 +495,13 @@ namespace NUnit.Framework
             {
                 try
                 {
-                    typeof(T).InvokeMember("Item", TransparentFlags | BindingFlags.SetProperty, null, target, indexes.Concat(new[] { value }).ToArray());
+                    typeof(T).InvokeMember("Item", TransparentFlags | BindingFlags.SetProperty, null, target, indexes.Concat(new[] {value}).ToArray());
                     return true;
                 }
-                catch (MissingMethodException) { throw new ArgumentException(string.Format("indexer not found : Type <{0}>", typeof(T).Name)); };
+                catch (MissingMethodException)
+                {
+                    throw new ArgumentException(string.Format("indexer not found : Type <{0}>", typeof(T).Name));
+                }
             }
 
             public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
@@ -508,7 +511,10 @@ namespace NUnit.Framework
                     result = typeof(T).InvokeMember("Item", TransparentFlags | BindingFlags.GetProperty, null, target, indexes);
                     return true;
                 }
-                catch (MissingMethodException) { throw new ArgumentException(string.Format("indexer not found : Type <{0}>", typeof(T).Name)); };
+                catch (MissingMethodException)
+                {
+                    throw new ArgumentException(string.Format("indexer not found : Type <{0}>", typeof(T).Name));
+                }
             }
 
             public override bool TrySetMember(SetMemberBinder binder, object value)

@@ -9,8 +9,8 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Method Chaining base UnitTesting Extension Methods and Dynamic Private Accessor for xUnit.net. This provides only single .cs file.</description>
         <language>en-US</language>
-        <licenseUrl>http://chainingassertion.codeplex.com/license</licenseUrl>
-        <projectUrl>http://chainingassertion.codeplex.com/</projectUrl>
+        <licenseUrl>https://github.com/neuecc/ChainingAssertion/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/neuecc/ChainingAssertion/</projectUrl>
         <tags>test unittest xUnit</tags>
         <frameworkAssemblies>
             <frameworkAssembly assemblyName="System" targetFramework="" />

@@ -1,3 +1,5 @@
+# THIS PROJECT IS ARCHIVED. USE [FluentAssertions](https://fluentassertions.com/) instead.
+
 # Chaining Assertion
 
 ![ChainingAssertion.jpg](.contents/ChainingAssertion.jpg)

@@ -4,7 +4,7 @@
  *
  * created and maintained by neuecc <ils@neue.cc - @neuecc on Twitter>
  * licensed under Microsoft Public License(Ms-PL)
- * http://chainingassertion.codeplex.com/
+ * https://github.com/neuecc/ChainingAssertion
  *--------------------------------------------------------------------------*/
 
 at first, include .cs file on your UnitTesting Project.
